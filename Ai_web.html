@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Tiro AI - A curated ecosystem of next-generation AI tools, chess, and productivity applications.">
+    <title>Tiro AI | Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #080a13;
+            --card-bg: rgba(255, 255, 255, 0.02);
+            --card-border: rgba(255, 255, 255, 0.06);
+            --accent-primary: #8a2be2; /* Purple Glow */
+            --accent-secondary: #00f2fe; /* Cyan Cyber */
+            --accent-tertiary: #ffd700; /* Amber Yellow */
+            --accent-orange: #ff8b28;   /* 3D Print Orange */
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --grid-opacity: 0.015;
+            --orb-opacity-1: 0.18;
+            --orb-opacity-2: 0.14;
+        }
+
+        /* Light Mode Specific Overrides */
+        :root.light-mode {
+            --bg-color: #f4f6fa;
+            --card-bg: rgba(255, 255, 255, 0.65);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --grid-opacity: 0.04;
+            --orb-opacity-1: 0.08;
+            --orb-opacity-2: 0.06;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 40px 20px;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Animated Ambient Background */
+        .bg-grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 15% 25%, rgba(138, 43, 226, var(--orb-opacity-1)) 0%, transparent 45%),
+                radial-gradient(circle at 85% 75%, rgba(0, 242, 254, var(--orb-opacity-2)) 0%, transparent 45%);
+            z-index: -2;
+        }
+
+        .bg-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-size: 40px 40px;
+            background-image: 
+                linear-gradient(to right, rgba(0, 0, 0, var(--grid-opacity)) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 0, 0, var(--grid-opacity)) 1px, transparent 1px);
+            -webkit-mask-image: radial-gradient(ellipse 65% 55% at 50% 50%, #000 70%, transparent 100%);
+            mask-image: radial-gradient(ellipse 65% 55% at 50% 50%, #000 70%, transparent 100%);
+            z-index: -1;
+        }
+
+        /* If dark mode, reverse line colors */
+        html:not(.light-mode) .bg-lines {
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, var(--grid-opacity)) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, var(--grid-opacity)) 1px, transparent 1px);
+        }
+
+        /* Floating Glow Canvas Effect */
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            z-index: -3;
+            animation: pulse 12s infinite alternate ease-in-out;
+            transition: background 0.4s ease;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: rgba(138, 43, 226, var(--orb-opacity-1));
+            top: 5%;
+            left: 10%;
+        }
+
+        .orb-2 {
+            width: 450px;
+            height: 450px;
+            background: rgba(0, 242, 254, var(--orb-opacity-2));
+            bottom: 10%;
+            right: 10%;
+            animation-delay: -6s;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1) translate(0, 0); }
+            100% { transform: scale(1.25) translate(40px, 40px); }
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 850px;
+            z-index: 1;
+            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .logo-container {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            box-shadow: 0 8px 30px rgba(138, 43, 226, 0.4);
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .logo-container::after {
+            content: '';
+            position: absolute;
+            top: -4px; left: -4px; right: -4px; bottom: -4px;
+            border-radius: 28px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            z-index: -1;
+            opacity: 0.5;
+            filter: blur(12px);
+        }
+
+        .logo-container i {
+            font-size: 2.2rem;
+            color: #fff;
+            animation: float 4s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 3.2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #ffffff, #dcdff2, var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px;
+            letter-spacing: -1px;
+            transition: all 0.4s ease;
+        }
+
+        html.light-mode h1 {
+            background: linear-gradient(to right, #0f172a, #334155, var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.15rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Grid of links */
+        .links-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+
+        @media (min-width: 650px) {
+            .links-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .featured-card {
+                grid-column: span 2;
+            }
+        }
+
+        /* Modern Glass Card */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 26px;
+            text-decoration: none;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1), background-color 0.4s ease, border-color 0.4s ease;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.03), transparent);
+            opacity: 0;
+            transition: opacity 0.4s;
+        }
+
+        .card:hover {
+            transform: translateY(-6px);
+            border-color: rgba(255, 255, 255, 0.18);
+            box-shadow: 0 16px 45px rgba(0, 0, 0, 0.3);
+        }
+
+        html.light-mode .card:hover {
+            border-color: rgba(0, 0, 0, 0.15);
+            box-shadow: 0 16px 35px rgba(15, 23, 42, 0.08);
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        /* Ambient glows for specific tools */
+        .card-tiro2:hover { border-color: rgba(0, 242, 254, 0.5); }
+        .card-tiro:hover { border-color: rgba(138, 43, 226, 0.5); }
+        .card-lemonic:hover { border-color: rgba(255, 215, 0, 0.4); }
+        .card-chess:hover { border-color: rgba(148, 163, 184, 0.5); }
+        .card-pomodoro:hover { border-color: rgba(248, 113, 113, 0.4); }
+        .card-3d-prints:hover { border-color: rgba(255, 139, 40, 0.4); }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .card-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            background: rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        
+        html.light-mode .card-icon {
+            background: rgba(0, 0, 0, 0.03);
+        }
+
+        /* Specific Icon Gradients */
+        .card-tiro2 .card-icon { background: linear-gradient(135deg, #00c6ff, #0072ff); color: #fff; }
+        .card-tiro .card-icon { background: linear-gradient(135deg, #b493eb, #8a2be2); color: #fff; }
+        .card-lemonic .card-icon { background: linear-gradient(135deg, #fef08a, #eab308); color: #451a03; }
+        .card-chess .card-icon { background: linear-gradient(135deg, #e2e8f0, #475569); color: #0f172a; }
+        .card-pomodoro .card-icon { background: linear-gradient(135deg, #f87171, #dc2626); color: #fff; }
+        .card-3d-prints .card-icon { background: linear-gradient(135deg, #ffaf65, #ff8b28); color: #fff; }
+
+        .card:hover .card-icon {
+            transform: scale(1.12) rotate(4deg);
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+
+        .badge-cyan { background: rgba(0, 242, 254, 0.12); color: #00b4d8; border: 1px solid rgba(0, 242, 254, 0.25); }
+        .badge-purple { background: rgba(138, 43, 226, 0.12); color: #7c3aed; border: 1px solid rgba(138, 43, 226, 0.25); }
+        .badge-yellow { background: rgba(234, 179, 8, 0.12); color: #ca8a04; border: 1px solid rgba(234, 179, 8, 0.25); }
+        .badge-gray { background: rgba(71, 85, 105, 0.1); color: #475569; border: 1px solid rgba(71, 85, 105, 0.2); }
+        .badge-pink { background: rgba(248, 113, 113, 0.12); color: #dc2626; border: 1px solid rgba(248, 113, 113, 0.25); }
+        .badge-orange { background: rgba(255, 139, 40, 0.12); color: #ea580c; border: 1px solid rgba(255, 139, 40, 0.25); }
+
+        html:not(.light-mode) .badge-cyan { color: #67e8f9; }
+        html:not(.light-mode) .badge-purple { color: #d8b4fe; }
+        html:not(.light-mode) .badge-yellow { color: #fef08a; }
+        html:not(.light-mode) .badge-gray { color: #cbd5e1; }
+        html:not(.light-mode) .badge-pink { color: #fca5a5; }
+        html:not(.light-mode) .badge-orange { color: #ffaf65; }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .card-description {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            line-height: 1.55;
+            margin-bottom: 24px;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .card-tiro2 .card-footer { color: #00b4d8; }
+        .card-tiro .card-footer { color: #7c3aed; }
+        .card-lemonic .card-footer { color: #ca8a04; }
+        .card-chess .card-footer { color: #475569; }
+        .card-pomodoro .card-footer { color: #dc2626; }
+        .card-3d-prints .card-footer { color: #ea580c; }
+        
+        html:not(.light-mode) .card-tiro2 .card-footer { color: #67e8f9; }
+        html:not(.light-mode) .card-tiro .card-footer { color: #d8b4fe; }
+        html:not(.light-mode) .card-lemonic .card-footer { color: #fef08a; }
+        html:not(.light-mode) .card-chess .card-footer { color: #cbd5e1; }
+        html:not(.light-mode) .card-pomodoro .card-footer { color: #fca5a5; }
+        html:not(.light-mode) .card-3d-prints .card-footer { color: #ffaf65; }
+
+        .card-footer i {
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        .card:hover .card-footer i {
+            transform: translateX(5px);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .footer-links {
+            margin-bottom: 16px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: all 0.3s;
+            font-size: 1.3rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--text-main);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-grid"></div>
+    <div class="bg-lines"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+
+    <div class="container">
+        <header>
+            <div class="logo-container">
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </div>
+            <h1>Dhivyansh's Controller</h1>
+            <p class="subtitle">NEGATIVE - </p>
+        </header>
+
+        <div class="links-grid">
+            
+            <a href="https://ai.studio/apps/drive/1Ymy11W5dFv3h3K5fvqSWZ9hPDe_fVOfx?fullscreenApplet=true" class="card card-tiro2 featured-card" target="_blank" rel="noopener noreferrer">
+                <div>
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fa-solid fa-rocket"></i>
+                        </div>
+                        <span class="badge badge-cyan">Featured • v2.0</span>
+                    </div>
+                    <h2 class="card-title">Tiro AI 2.0 <i class="fa-solid fa-arrow-up-right-from-square" style="font-size:0.9rem;opacity:0.6;"></i></h2>
+                    <p class="card-description">Next-generation workspace built for deep productivity integration, neural files interaction, and enhanced reasoning workflows. The direct evolutionary leap of the Tiro platform.</p>
+                </div>
+                <div class="card-footer">
+                    Launch Neural Workspace <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="https://ai-memory-chat-3.preview.emergentagent.com/" class="card card-tiro" target="_blank" rel="noopener noreferrer">
+                <div>
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <span class="badge badge-purple">Core Agent</span>
+                    </div>
+                    <h2 class="card-title">Tiro AI</h2>
+                    <p class="card-description">Advanced conversational partner with smart memory capabilities, real-time context storage, and context recall for long-term project planning.</p>
+                </div>
+                <div class="card-footer">
+                    Open Conversational Agent <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="https://lemonic-ai.space.z.ai" class="card card-lemonic" target="_blank" rel="noopener noreferrer">
+                <div>
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fa-solid fa-lemon"></i>
+                        </div>
+                        <span class="badge badge-yellow">AI System</span>
+                    </div>
+                    <h2 class="card-title">Lemonic v1</h2>
+                    <p class="card-description">A vibrant, citrus-infused assistant crafted for swift text curation, creative generation, and high-efficiency workflow automation.</p>
+                </div>
+                <div class="card-footer">
+                    Deploy Lemonic v1 <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="https://chess-duo.space.z.ai" class="card card-chess" target="_blank" rel="noopener noreferrer">
+                <div>
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fa-solid fa-chess-knight"></i>
+                        </div>
+                        <span class="badge badge-gray">Interactive</span>
+                    </div>
+                    <h2 class="card-title">ChessDuo</h2>
+                    <p class="card-description">Challenge real-time players or pit yourself against a custom neural chess engine in a high-fidelity minimalist game space.</p>
+                </div>
+                <div class="card-footer">
+                    Play ChessDuo <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="https://modern-react-pomodor-fomu.bolt.host/" class="card card-pomodoro" target="_blank" rel="noopener noreferrer">
+                <div>
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fa-solid fa-stopwatch"></i>
+                        </div>
+                        <span class="badge badge-pink">Productivity</span>
+                    </div>
+                    <h2 class="card-title">Pomodoro Focus</h2>
+                    <p class="card-description">A state-of-the-art flow state companion utilizing customizable focus cycles and modern metrics to banish procrastination.</p>
+                </div>
+                <div class="card-footer">
+                    Start Focus Session <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </a>
+
+            <a href="https://drive.google.com/drive/folders/152rhl2p-vtmyvl6es_9aX7fknL4b_dK4" class="card card-3d-prints" target="_blank" rel="noopener noreferrer">
+                <div>
+                    <div class="card-header">
+                        <div class="card-icon">
+                            <i class="fa-solid fa-bolt"></i>
+                        </div>
+                        <span class="badge badge-orange">Printable</span>
+                    </div>
+                    <h2 class="card-title">3D Prints</h2>
+                    <p class="card-description">Some 3d printable thats gonna be printed 🥀</p>
+                </div>
+                <div class="card-footer">
+                    Start The Print <i class="fa-solid fa-arrow-right"></i>
+                </div>
+            </a>
+            <a href="https://html-9bu6pu.onspace.build/"
+   class="card card-elpo"
+   target="_blank"
+   rel="noopener noreferrer">
+
+    <div>
+        <div class="card-header">
+            <div class="card-icon">
+                <i class="fa-solid fa-cloud"></i>
+            </div>
+            <span class="badge badge-lime">Cloud Storage</span>
+        </div>
+
+        <h2 class="card-title">
+            Elpo
+            <i class="fa-solid fa-arrow-up-right-from-square"
+               style="font-size:0.9rem;opacity:0.6;"></i>
+        </h2>
+
+        <p class="card-description">
+            Secure cloud space storage for uploading, organizing, and accessing your files from anywhere.
+        </p>
+    </div>
+
+    <div class="card-footer">
+        Open Elpo <i class="fa-solid fa-arrow-right"></i>
+    </div>
+</a>
+        </div>
+
+        <footer>
+            <div class="footer-links">
+    <a href="https://github.com/mrcuriousmind3-web" title="GitHub" target="_blank" rel="noopener noreferrer">
+        <i class="fa-brands fa-github"></i>
+    </a>
+
+    <a href="https://discord.com/users/therealmrpickle1" title="Discord" target="_blank" rel="noopener noreferrer">
+        <i class="fa-brands fa-discord"></i>
+    </a>
+</div>
+
+    <script>
+        window.addEventListener('keydown', function(e) {
+            // Check for Ctrl + Alt + Z (e.key match handles both upper/lower variants)
+            if (e.ctrlKey && e.altKey && (e.key === 'z' || e.key === 'Z')) {
+                e.preventDefault(); // Prevents default browser hooks if any exist
+                document.documentElement.classList.toggle('light-mode');
+            }
+        });
+    </script>
+</body>
+</html>
