@@ -1,0 +1,1586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MrCuriosity — vibecoder & systems enthusiast</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:ital,wght@0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg0:#0f1512; --bg1:#151c18; --bg2:#1b231e; --bg3:#232d26;
+  --line:#2a342d; --line2:#3d4a40;
+  --fg:#d3c6aa; --dim:#8a9689; --faint:#5c685e;
+  --green:#a7c080; --amber:#dbbc7f; --red:#e67e80; --aqua:#83c092;
+  --blue:#7fbbb3; --purple:#d699b6; --orange:#e69875;
+  --accent:#a7c080;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --disp:'Syne',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg0);color:var(--fg);
+  font-family:var(--mono);font-size:15px;line-height:1.65;
+  padding-bottom:42px; overflow-x:hidden;
+  background-image:radial-gradient(circle,#1c241f 1px,transparent 1px);
+  background-size:34px 34px;
+}
+::selection{background:var(--accent);color:#10150f}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-track{background:var(--bg0)}
+::-webkit-scrollbar-thumb{background:var(--bg3);border:2px solid var(--bg0)}
+:focus-visible{outline:1px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+a{color:var(--accent);text-decoration:none}
+.wrap{max-width:1200px;margin:0 auto;padding:0 clamp(18px,4vw,44px)}
+
+/* type helpers */
+.out{color:transparent;-webkit-text-stroke:1.5px var(--accent)}
+.dim{color:var(--dim)} .ac{color:var(--accent)} .am{color:var(--amber)} .rd{color:var(--red)}
+.sec{padding:110px 0 70px;scroll-margin-top:8px}
+.sec-head{margin-bottom:56px}
+.sec-tag{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+.sec-tag::before{content:"";display:inline-block;width:26px;height:1px;background:var(--accent);vertical-align:middle;margin-right:12px}
+.sec-head h2{font-family:var(--disp);font-weight:800;font-size:clamp(2rem,4.6vw,3.6rem);line-height:1.02;text-transform:uppercase;letter-spacing:-.01em}
+.sec-sub{max-width:680px;color:var(--dim);margin-top:22px}
+.sec-sub b{color:var(--fg);font-weight:500}
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s cubic-bezier(.2,.7,.2,1),transform .7s cubic-bezier(.2,.7,.2,1)}
+.reveal.in{opacity:1;transform:none}
+
+/* boot */
+#boot{position:fixed;inset:0;z-index:200;background:#0b0f0d;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);color:#c8bfa4;transition:opacity .6s;cursor:pointer}
+#boot.off{opacity:0;pointer-events:none}
+.boot-inner{width:min(680px,92vw)}
+.grub-head{text-align:center;color:#7d8672;font-size:13px;margin-bottom:18px;letter-spacing:.08em}
+.grub-box{border:1px solid #39443a;padding:10px 0;background:#0e1310}
+.grub-entry{padding:7px 22px;font-size:14.5px;color:#a8b096;display:flex;gap:10px}
+.grub-entry .ge-mark{width:14px;color:#10150f}
+.grub-entry.sel{background:var(--green);color:#10150f}
+.grub-hint{color:#66705f;font-size:12px;margin:16px 0 6px;line-height:1.5}
+.grub-count{color:#a8b096;font-size:13px}
+.grub-count b{color:var(--green)}
+.boot-log{margin-top:18px;font-size:12.5px;color:#8fa383;min-height:96px;line-height:1.7;white-space:pre-wrap}
+.boot-log .ok{color:var(--green)}
+
+/* tmux bar */
+#tmux{position:fixed;left:0;right:0;bottom:0;height:42px;z-index:100;display:flex;align-items:stretch;gap:2px;
+  background:var(--bg1);border-top:1px solid var(--line2);font-size:12px}
+.tmx-left{display:flex;align-items:stretch;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:none;flex:1}
+.tmx-left::-webkit-scrollbar{display:none}
+.tmx-session{display:flex;align-items:center;padding:0 12px;background:var(--accent);color:#10150f;font-weight:700;white-space:nowrap}
+#tmxWins{display:flex;align-items:stretch}
+#tmxWins button{background:none;border:0;color:var(--dim);font:inherit;padding:0 11px;cursor:pointer;white-space:nowrap;border-right:1px solid var(--line)}
+#tmxWins button:hover{color:var(--fg);background:var(--bg2)}
+#tmxWins button.act{background:var(--bg3);color:var(--accent);font-weight:700}
+.tmx-right{display:flex;align-items:center;gap:14px;padding:0 14px;border-left:1px solid var(--line);color:var(--faint);white-space:nowrap}
+.tmx-right b{color:var(--dim);font-weight:500}
+
+/* terminal chrome */
+.term{background:var(--bg1);border:1px solid var(--line2)}
+.term-bar{display:flex;align-items:center;gap:9px;padding:9px 14px;background:var(--bg2);border-bottom:1px solid var(--line);font-size:12px;color:var(--dim)}
+.tb-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex:none}
+.term-body{padding:20px 22px;min-height:340px}
+
+/* hero */
+#sec-main{min-height:calc(100svh - 42px);display:flex;align-items:center;position:relative;padding:70px 0 90px}
+.hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:clamp(28px,4vw,64px);align-items:center;width:100%}
+.hero-kicker{font-size:12.5px;color:var(--dim);letter-spacing:.14em;text-transform:uppercase;margin-bottom:26px;display:flex;align-items:center;gap:10px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pu 2s infinite}
+@keyframes pu{0%,100%{box-shadow:0 0 0 0 rgba(167,192,128,.5)}55%{box-shadow:0 0 0 9px rgba(167,192,128,0)}}
+.hero-name{font-family:var(--disp);font-weight:800;text-transform:uppercase;line-height:.95;margin-bottom:26px}
+.hn-top{display:block;font-size:clamp(.9rem,1.6vw,1.25rem);letter-spacing:.55em;color:var(--dim);margin-bottom:10px}
+.hn-main{display:block;font-size:clamp(2.9rem,7.4vw,6.2rem);letter-spacing:-.015em}
+.hn-caret{display:inline-block;width:.14em;height:.82em;background:var(--accent);vertical-align:baseline;margin-left:.06em;animation:blink 1.1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.hero-role{color:var(--accent);font-size:13.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:20px}
+.hero-ethos{max-width:520px;color:var(--dim);margin-bottom:36px}
+.hero-ethos b{color:var(--fg);font-weight:500}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:34px}
+.btn{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:13.5px;color:var(--fg);
+  background:var(--bg1);border:1px solid var(--line2);padding:12px 20px;cursor:pointer;transition:.18s}
+.btn:hover{background:var(--accent);color:#10150f;border-color:var(--accent)}
+.btn .pr{color:var(--accent);transition:.18s}
+.btn:hover .pr{color:#10150f}
+.hero-meta{font-size:12px;color:var(--faint)}
+.hero-nav-hint{position:absolute;bottom:64px;left:0;right:0;text-align:center;font-size:11.5px;color:var(--faint);letter-spacing:.12em}
+.hero-q{position:absolute;right:-2%;top:4%;font-family:var(--disp);font-weight:800;font-size:clamp(14rem,30vw,26rem);
+  color:var(--fg);opacity:.028;pointer-events:none;line-height:1;user-select:none}
+
+/* fastfetch */
+.ff{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap}
+.ff pre{font-size:12px;line-height:1.35;flex:none}
+.ff-lines{flex:1;min-width:230px;font-size:12.8px;line-height:1.85}
+.ff-l{display:grid;grid-template-columns:64px 1fr;column-gap:10px}
+.ff-lines .k{color:var(--amber)} .ff-lines .v{color:var(--fg)} .ff-lines .hl{color:var(--accent)}
+.ff-head{color:var(--accent);font-weight:700}
+.ff-user{color:var(--amber);font-weight:700}
+.ff-rule{color:var(--line2)}
+.pdot{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:5px;vertical-align:middle}
+.fcaret{display:inline-block;width:7px;height:13px;background:var(--accent);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+
+/* ticker */
+.ticker{overflow:hidden;border-block:1px solid var(--line);padding:11px 0;background:var(--bg1)}
+.ticker-track{display:flex;gap:0;width:max-content;animation:tk 30s linear infinite}
+.ticker:hover .ticker-track{animation-play-state:paused}
+@keyframes tk{to{transform:translateX(-50%)}}
+.tk{font-size:12.5px;letter-spacing:.18em;color:var(--dim);white-space:nowrap;padding-right:2.6rem}
+.tk i{font-style:normal;color:var(--accent);padding-left:2.6rem}
+
+/* systems map */
+.sys-grid{display:grid;grid-template-columns:1fr 320px;gap:26px;align-items:stretch}
+#sysmap{width:100%;height:auto;background:var(--bg1);border:1px solid var(--line2);display:block}
+#sysmap .edge{fill:none;stroke:var(--line2);stroke-width:1.3;transition:stroke .2s,opacity .2s}
+#sysmap .edge.dash{stroke-dasharray:5 5}
+#sysmap.focus .edge{opacity:.14}
+#sysmap.focus .edge.on{opacity:1;stroke:var(--accent);stroke-dasharray:6 6;animation:dashmove 1.2s linear infinite}
+@keyframes dashmove{to{stroke-dashoffset:-12}}
+#sysmap .nd rect{fill:var(--bg2);stroke:var(--line2);transition:.2s}
+#sysmap .nd text{fill:var(--fg);font-family:var(--mono);font-size:11.5px;letter-spacing:.05em}
+#sysmap .nd{cursor:pointer;transition:opacity .2s}
+#sysmap.focus .nd{opacity:.35}
+#sysmap.focus .nd.on{opacity:1}
+#sysmap .nd.on rect{stroke:var(--accent);fill:var(--bg3)}
+#sysmap .nd.on text{fill:var(--accent)}
+#sysmap .nd.hub rect{stroke:var(--accent);fill:var(--bg3)}
+#sysmap .nd.hub text{fill:var(--accent);font-weight:700}
+.sys-panel{background:var(--bg1);border:1px solid var(--line2);padding:24px;display:flex;flex-direction:column}
+.sp-tag{font-size:11px;letter-spacing:.2em;color:var(--faint);text-transform:uppercase;margin-bottom:12px}
+.sp-name{font-family:var(--disp);font-weight:800;font-size:1.5rem;text-transform:uppercase;color:var(--accent);line-height:1.1;margin-bottom:14px}
+.sp-desc{color:var(--dim);font-size:13.5px;flex:1}
+.sp-meta{border-top:1px solid var(--line);margin-top:18px;padding-top:14px;font-size:12px;color:var(--faint)}
+
+/* live site card */
+.site-card{display:flex;align-items:center;justify-content:space-between;gap:18px;border:1px solid var(--accent);background:var(--bg1);padding:26px 30px;margin-bottom:34px;transition:background .2s}
+.site-card:hover{background:var(--bg2)}
+.sc-left{display:block;min-width:0}
+.sc-tag{display:inline-block;font-size:10.5px;letter-spacing:.18em;color:#10150f;background:var(--accent);padding:3px 10px;font-weight:700;text-transform:uppercase;margin-bottom:12px}
+.sc-name{display:block;font-family:var(--disp);font-weight:800;font-size:clamp(1.3rem,3vw,2rem);text-transform:uppercase;letter-spacing:.01em}
+.sc-name em{font-style:normal;color:var(--accent)}
+.sc-desc{display:block;color:var(--dim);font-size:13.5px;margin-top:8px;max-width:560px}
+.sc-go{flex:none;font-size:13px;letter-spacing:.12em;color:var(--accent);border:1px solid var(--line2);padding:10px 18px;transition:.2s}
+.site-card:hover .sc-go{background:var(--accent);color:#10150f;border-color:var(--accent)}
+
+/* projects index */
+.proj{display:grid;grid-template-columns:64px 1fr auto 32px;gap:20px;align-items:baseline;
+  padding:30px 10px;border-bottom:1px solid var(--line);cursor:pointer;transition:background .2s;position:relative}
+.proj:first-of-type{border-top:1px solid var(--line)}
+.proj:hover{background:var(--bg1)}
+.p-idx{color:var(--faint);font-size:13px}
+.p-name{font-family:var(--disp);font-weight:800;font-size:clamp(1.4rem,3.4vw,2.5rem);text-transform:uppercase;transition:transform .25s,color .2s}
+.proj:hover .p-name{transform:translateX(14px);color:var(--accent)}
+.p-info{color:var(--dim);font-size:13px;max-width:360px;text-align:right}
+.p-info .tags{display:block;margin-top:7px;color:var(--faint);font-size:11.5px;letter-spacing:.06em}
+.p-arr{color:var(--faint);transition:.25s;align-self:center}
+.proj:hover .p-arr{color:var(--accent);transform:translate(4px,-4px)}
+#preview{position:fixed;z-index:90;width:300px;pointer-events:none;opacity:0;transform:scale(.96);transition:opacity .2s}
+#preview.show{opacity:1}
+.pv-inner{background:var(--bg2);border:1px solid var(--line2);box-shadow:0 18px 50px rgba(0,0,0,.5)}
+.mock{display:none;padding:18px;min-height:212px}
+.mock.on{display:block}
+.pv-label{border-top:1px solid var(--line);padding:9px 16px;font-size:11px;letter-spacing:.16em;color:var(--faint);text-transform:uppercase}
+.mock-bar{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--dim);border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px}
+.mock-bar i{width:7px;height:7px;border-radius:50%;background:var(--line2)}
+.mline{height:9px;background:var(--bg3);margin:9px 0;border-radius:2px}
+.mline.w60{width:60%}.mline.w80{width:80%}
+.mbtn{display:inline-block;margin-top:12px;padding:7px 14px;background:var(--accent);color:#10150f;font-size:11px;font-weight:700;letter-spacing:.1em}
+.mshield{margin:6px auto 4px;display:block}
+.m-bub{max-width:82%;padding:9px 12px;font-size:11.5px;margin-bottom:9px;line-height:1.5}
+.m-bub.l{background:var(--bg3);border:1px solid var(--line2)}
+.m-bub.r{background:var(--bg3);border:1px solid var(--accent);margin-left:auto;color:var(--fg)}
+.m-inrow{display:flex;align-items:center;gap:8px;border:1px solid var(--line2);padding:8px 11px;font-size:11px;color:var(--faint);margin-top:14px}
+.m-file{display:flex;justify-content:space-between;font-size:11.5px;color:var(--dim);padding:7px 0;border-bottom:1px dashed var(--line)}
+.m-usage{height:6px;background:var(--bg3);margin-top:14px;position:relative}
+.m-usage i{position:absolute;inset:0;right:38%;background:var(--accent)}
+.m-clock{text-align:center;padding-top:26px}
+.m-clock b{font-size:44px;font-weight:700;letter-spacing:.04em;color:var(--fg);display:block;font-variant-numeric:tabular-nums}
+.m-clock span{font-size:11px;color:var(--faint);letter-spacing:.2em}
+
+.modal{position:fixed;inset:0;z-index:150;display:flex;align-items:center;justify-content:center;padding:20px}
+.modal-back{position:absolute;inset:0;background:rgba(8,11,9,.78)}
+.modal-card{position:relative;width:min(620px,94vw);max-height:86vh;overflow:auto;background:var(--bg1);border:1px solid var(--line2);padding:36px}
+.modal-x{position:absolute;top:14px;right:14px;background:none;border:1px solid var(--line2);color:var(--dim);width:34px;height:34px;cursor:pointer;font:inherit}
+.modal-x:hover{color:var(--fg);border-color:var(--accent)}
+.modal-tag{font-size:11px;letter-spacing:.2em;color:var(--accent);text-transform:uppercase;margin-bottom:10px}
+.modal-name{font-family:var(--disp);font-weight:800;font-size:2rem;text-transform:uppercase;margin-bottom:4px}
+.modal-tag2{color:var(--amber);font-size:13px;margin-bottom:18px}
+.modal-desc{color:var(--dim);margin-bottom:22px}
+.modal-feats{list-style:none;margin-bottom:24px}
+.modal-feats li{padding:5px 0;color:var(--fg);font-size:13.5px}
+.modal-feats li::before{content:"▸";color:var(--accent);margin-right:10px}
+.modal-feats li a{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.modal-feats li a:hover{color:var(--fg)}
+.modal-tags span{display:inline-block;border:1px solid var(--line2);color:var(--dim);font-size:11px;padding:4px 10px;margin:0 6px 6px 0;letter-spacing:.08em}
+
+/* file manager (full index) */
+.fm-stats{font-size:12px;color:var(--faint);margin-bottom:16px}
+.fm-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+.fm-tab{font:inherit;font-size:12px;letter-spacing:.08em;padding:8px 16px;background:var(--bg1);border:1px solid var(--line2);color:var(--dim);cursor:pointer;transition:.15s}
+.fm-tab:hover{color:var(--fg)}
+.fm-tab.on{background:var(--accent);border-color:var(--accent);color:#10150f;font-weight:700}
+.fm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:9px}
+.fm-item{display:flex;align-items:center;gap:11px;padding:12px 14px;background:var(--bg1);border:1px solid var(--line);cursor:pointer;transition:.15s;min-width:0;font-size:13px;color:var(--fg)}
+.fm-item:hover,.fm-item.sel{border-color:var(--accent);background:var(--bg2)}
+.fm-item .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fm-item svg{flex:none}
+.fm-item.del{opacity:.42}
+.fm-item.del .nm{text-decoration:line-through}
+.fm-item.remote{border:1px dashed var(--accent)}
+.fm-item.remote .nm{color:var(--accent)}
+.fm-inspect{margin-top:14px;border:1px solid var(--line2);background:var(--bg1);padding:13px 16px;font-size:12.5px;color:var(--dim);display:flex;gap:14px;flex-wrap:wrap}
+.fm-inspect .pth{color:var(--amber);white-space:nowrap}
+
+/* games */
+.game-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(24px,3.5vw,54px);align-items:start}
+.eng{border:1px solid var(--line);border-left:2px solid var(--line2);padding:20px 22px;margin-bottom:14px;background:var(--bg1);transition:border-color .2s}
+.eng:hover{border-left-color:var(--accent)}
+.eng h3{font-family:var(--disp);font-weight:800;font-size:1.15rem;text-transform:uppercase;letter-spacing:.02em}
+.eng p{color:var(--dim);font-size:13px;margin-top:6px}
+.eng .chip{color:var(--accent);font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.clicker{background:var(--bg1);border:1px solid var(--line2)}
+.ck-stage{position:relative;padding:30px 20px 18px;text-align:center;overflow:hidden;user-select:none}
+#monkey{width:200px;height:200px;cursor:pointer;animation:bob 3.2s ease-in-out infinite;transform-origin:50% 90%;transition:transform .09s}
+#monkey.hit{transform:translateY(9px) rotate(-7deg) scale(.95)}
+@keyframes bob{0%,100%{translate:0 0}50%{translate:0 -6px}}
+.plus1{position:absolute;font-weight:700;font-size:14px;pointer-events:none;animation:fup .9s ease-out forwards}
+@keyframes fup{from{opacity:1;transform:translateY(0)}to{opacity:0;transform:translateY(-74px)}}
+.ck-stats{display:flex;justify-content:space-between;border-block:1px solid var(--line);padding:12px 18px;font-size:13px}
+.ck-stats b{color:var(--amber);font-variant-numeric:tabular-nums}
+.ck-status{padding:11px 18px;font-size:12px;color:var(--dim)}
+.ck-status.flash{color:var(--accent)}
+.ck-foot{display:flex;justify-content:space-between;align-items:center;padding:10px 18px;border-top:1px solid var(--line);font-size:11.5px;color:var(--faint)}
+.ck-foot button{background:none;border:0;color:var(--dim);font:inherit;font-size:11.5px;cursor:pointer;text-decoration:underline}
+.ck-foot button:hover{color:var(--fg)}
+.mt-row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:34px;padding-top:26px;border-top:1px solid var(--line)}
+.mt-label{font-size:11px;letter-spacing:.18em;color:var(--faint);text-transform:uppercase;margin-right:8px}
+.mt-chip{font:inherit;font-size:12.5px;padding:8px 14px;background:var(--bg1);border:1px solid var(--line2);color:var(--dim);cursor:pointer;transition:.15s}
+.mt-chip:hover{color:#10150f;background:var(--accent);border-color:var(--accent)}
+
+/* ai */
+.ai-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,3.5vw,54px);align-items:start}
+.pipe{border-left:1px solid var(--line2)}
+.pipe-item{position:relative;padding:4px 0 30px 26px}
+.pipe-item:last-child{padding-bottom:4px}
+.pipe-item::before{content:"";position:absolute;left:-5px;top:12px;width:9px;height:9px;background:var(--bg0);border:2px solid var(--accent);border-radius:50%}
+.pipe-item::after{content:"";position:absolute;left:-1px;top:22px;bottom:-2px;width:1px;background:var(--line2)}
+.pipe-item:last-child::after{display:none}
+.pipe-item h3{font-size:1rem;font-weight:700;letter-spacing:.06em}
+.pipe-item h3 span{color:var(--faint);font-weight:400;margin-right:10px}
+.pipe-item p{color:var(--dim);font-size:13px;margin-top:4px;max-width:400px}
+.synth{background:var(--bg1);border:1px solid var(--line2)}
+.sy-head{padding:12px 18px;border-bottom:1px solid var(--line);font-size:12px;color:var(--dim);display:flex;justify-content:space-between;align-items:center}
+.sy-body{padding:18px}
+.gchips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.gchip{font:inherit;font-size:12px;padding:7px 14px;background:var(--bg2);border:1px solid var(--line2);color:var(--dim);cursor:pointer;letter-spacing:.06em}
+.gchip:hover{color:var(--fg)}
+.gchip.on{background:var(--accent);border-color:var(--accent);color:#10150f;font-weight:700}
+.prompt-box{background:var(--bg0);border:1px dashed var(--line2);padding:13px 15px;font-size:12.5px;color:var(--dim);margin-bottom:16px;min-height:66px}
+.prompt-box b{color:var(--amber);font-weight:500}
+.sy-transport{display:flex;align-items:center;gap:16px;margin-bottom:14px}
+.playbtn{width:52px;height:52px;flex:none;background:var(--bg2);border:1px solid var(--line2);color:var(--accent);cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.18s}
+.playbtn:hover{background:var(--accent);color:#10150f;border-color:var(--accent)}
+#leds{display:flex;gap:5px;flex-wrap:wrap;flex:1}
+#leds i{width:9px;height:9px;border:1px solid var(--line2);background:var(--bg0);border-radius:50%}
+#leds i.on{background:var(--accent);border-color:var(--accent)}
+.ledbar{font-size:11px;color:var(--faint);min-width:56px;text-align:right}
+#viz{width:100%;height:110px;display:block;background:var(--bg0);border:1px solid var(--line)}
+.sy-note{font-size:11px;color:var(--faint);margin-top:10px}
+
+/* anubhuti */
+.toy-grid{display:grid;grid-template-columns:1.15fr .85fr;gap:22px;margin-bottom:26px}
+.toy{background:var(--bg1);border:1px solid var(--line2)}
+.toy-head{padding:20px 24px;border-bottom:1px solid var(--line)}
+.toy-head h3{font-family:var(--disp);font-weight:800;font-size:1.7rem;text-transform:uppercase;letter-spacing:.04em}
+.toy-head p{color:var(--dim);font-size:13px;margin-top:4px}
+.toy-stage{height:230px;position:relative;overflow:hidden;border-bottom:1px solid var(--line);cursor:crosshair}
+#sparshStage{display:flex;align-items:center;justify-content:center}
+#sparshGrid{display:grid;grid-template-columns:repeat(15,14px);gap:11px}
+#sparshGrid i{width:6px;height:6px;border-radius:50%;background:var(--faint);transition:background .25s;will-change:transform}
+#gatiStage{cursor:pointer}
+.pend-wrap{position:absolute;left:50%;top:0;height:100%;transform-origin:50% 0;animation:swing 1.8s ease-in-out infinite alternate}
+.pend-wrap.excited{animation-duration:.8s}
+@keyframes swing{from{transform:translateX(-50%) rotate(-26deg)}to{transform:translateX(-50%) rotate(26deg)}}
+.pend-arm{width:2px;height:150px;background:var(--line2);margin:0 auto;position:relative}
+.pend-arm::after{content:"";position:absolute;left:50%;bottom:-16px;width:34px;height:34px;border-radius:50%;background:var(--accent);transform:translateX(-50%)}
+.pend-arm::before{content:"";position:absolute;left:50%;top:0;width:8px;height:8px;background:var(--dim);transform:translateX(-50%)}
+.toy-specs{padding:18px 24px;font-size:13px;color:var(--dim)}
+.toy-specs li{list-style:none;padding:4px 0}
+.toy-specs li::before{content:"—";color:var(--accent);margin-right:10px}
+.sdg-row{display:flex;gap:10px;flex-wrap:wrap}
+.sdg{border:1px solid var(--line2);padding:10px 16px;font-size:12px;color:var(--dim);letter-spacing:.06em}
+.sdg b{color:var(--accent);font-weight:700;margin-right:8px}
+
+/* mind */
+.mind-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:clamp(24px,3.5vw,54px);align-items:start}
+.mun{border:1px solid var(--line);border-left:2px solid var(--amber);padding:20px 22px;background:var(--bg1);margin-bottom:14px}
+.mun h3{font-size:.95rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.mun p{color:var(--dim);font-size:13px;margin-top:6px}
+.chessbox{background:var(--bg1);border:1px solid var(--line2);padding:20px}
+#board{display:grid;grid-template-columns:repeat(8,1fr);aspect-ratio:1;max-width:460px;margin:0 auto;border:1px solid var(--line2)}
+.sq{display:flex;align-items:center;justify-content:center;font-size:clamp(1.2rem,3vw,1.9rem);cursor:default;position:relative}
+.sq.l{background:#a9b18d}.sq.d{background:#49544a}
+.sq.wp{color:#efe7cd;text-shadow:0 1px 2px rgba(0,0,0,.55)}
+.sq.bp{color:#252d27;text-shadow:0 0 1px rgba(220,210,180,.3)}
+.sq.sel{outline:2px solid var(--amber);outline-offset:-2px;z-index:2}
+.sq.rel{outline:2px dashed var(--accent);outline-offset:-2px;z-index:2}
+.fen{margin-top:12px;font-size:11px;color:var(--faint);text-align:center;letter-spacing:.04em;word-break:break-all}
+.anno{margin-top:16px;border:1px dashed var(--line2);padding:14px 16px;font-size:13px;color:var(--dim);min-height:76px}
+.anno b{color:var(--amber);font-weight:700}
+
+/* shell */
+.term-big-body{padding:20px 22px;height:430px;overflow-y:auto;font-size:13.5px;line-height:1.75}
+.t-line{white-space:pre-wrap;word-break:break-word}
+.t-in{display:flex;gap:10px;padding:12px 22px;border-top:1px solid var(--line)}
+.t-ps1{color:var(--accent);font-weight:700;white-space:nowrap}
+#tIn{flex:1;background:none;border:0;color:var(--fg);font:inherit;outline:none;caret-color:var(--accent)}
+.t-cmd{color:var(--amber)} .t-err{color:var(--red)} .t-ok{color:var(--aqua)} .t-dim{color:var(--dim)}
+
+#toast{position:fixed;right:18px;bottom:58px;z-index:160;background:var(--bg2);border:1px solid var(--accent);
+  color:var(--fg);font-size:13px;padding:12px 18px;opacity:0;transform:translateY(8px);transition:.25s;pointer-events:none}
+#toast.show{opacity:1;transform:none}
+
+@media(max-width:1000px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero-q{display:none}
+  .sys-grid,.game-grid,.ai-grid,.mind-grid{grid-template-columns:1fr}
+  .toy-grid{grid-template-columns:1fr}
+  .p-info{text-align:left;grid-column:2/-1}
+  .proj{grid-template-columns:44px 1fr 24px}
+  #preview{display:none}
+  .site-card{flex-direction:column;align-items:flex-start}
+}
+@media(max-width:600px){
+  .tmx-right span:first-child{display:none}
+  .term-big-body{height:360px}
+  .ff pre{display:none}
+}
+@media(prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important}
+  html{scroll-behavior:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== BOOT ==================== -->
+<div id="boot" role="button" aria-label="boot menu — click to continue">
+  <div class="boot-inner">
+    <div class="grub-head">MRCURIOSITY BOOT MANAGER — UEFI v2.12</div>
+    <div class="grub-box" id="grubBox">
+      <div class="grub-entry sel"><span class="ge-mark">▸</span>MrCuriosity — Portfolio (UEFI · Win11 Home)</div>
+      <div class="grub-entry"><span class="ge-mark"></span>Windows 11 Home (DESKTOP-OCTC3BM)</div>
+      <div class="grub-entry"><span class="ge-mark"></span>Memory test (memtest86+)</div>
+    </div>
+    <div class="grub-hint">Use the ↑ and ↓ keys to select which entry is highlighted.<br>Press enter to boot the selected entry. Click anywhere to boot now.</div>
+    <div class="grub-count">The selected entry will be booted automatically in <b id="bootN">3</b>s.</div>
+    <pre class="boot-log" id="bootLog"></pre>
+  </div>
+</div>
+
+<!-- ==================== 0 · MAIN ==================== -->
+<section id="sec-main" class="sec">
+  <div class="hero-q">?</div>
+  <div class="wrap hero-grid">
+    <div>
+      <div class="hero-kicker"><span class="pulse"></span>session: mrcuriosity — attached · host desktop-octc3bm</div>
+      <h1 class="hero-name">
+        <span class="hn-top">mr.</span>
+        <span class="hn-main">CURIOSITY<span class="hn-caret"></span></span>
+      </h1>
+      <div class="hero-role">vibecoder · systems enthusiast · creative technologist</div>
+      <p class="hero-ethos">I work at the intersection of <b>AI-assisted engineering</b> and <b>custom software design</b> — using large language models and intelligent tooling to bridge the gap between a high-level idea and a production-ready application. From OS concepts to shipped games — all off one 8 GB machine.</p>
+      <div class="cta-row">
+        <button class="btn" data-go="index"><span class="pr">$</span>ls ~/index</button>
+        <a class="btn" href="https://ai-dhivyansh.edgeone.dev" target="_blank" rel="noopener"><span class="pr">$</span>open archive ↗</a>
+      </div>
+      <div class="hero-meta">locale: C:\Users\mrcuriosity · theme: everforest · mood: curious</div>
+    </div>
+    <div class="term reveal">
+      <div class="term-bar"><span class="tb-dot"></span>mrcuriosity@DESKTOP-OCTC3BM: ~ — fastfetch</div>
+      <div class="term-body ff">
+        <pre id="ffArt" aria-hidden="true"></pre>
+        <div class="ff-lines" id="ffLines"></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-nav-hint">navigate: tmux bar below · keys 0–8 · press / for the shell</div>
+</section>
+
+<!-- ==================== ticker ==================== -->
+<div class="ticker" aria-hidden="true">
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<!-- ==================== 1 · SYS ==================== -->
+<section id="sec-sys" class="sec">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <div class="sec-tag">[1] // systems engineering</div>
+      <h2>The machine &amp;<br><span class="out">the method</span></h2>
+      <p class="sec-sub">New rig, same doctrine. <b>Windows 11 Home</b> on an <b>AMD Ryzen 3 5300U</b> with 8 GB of RAM — proof you don't need a monster machine to ship: local AI, game engines and full applications all run on this. The workflow is built around an <b>agentic IDE</b> and AI-assisted everything, while the retired OptiPlex era (Zorin, skinned GRUB, rclone) lives on in the archive. Hover the map to inspect each component.</p>
+    </header>
+    <div class="sys-grid reveal">
+      <svg id="sysmap" viewBox="0 0 1000 560" role="img" aria-label="interactive map of the workstation stack"></svg>
+      <aside class="sys-panel">
+        <div class="sp-tag">// component inspector</div>
+        <div class="sp-name" id="spName"></div>
+        <p class="sp-desc" id="spDesc"></p>
+        <div class="sp-meta" id="spMeta"></div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 2 · WEB ==================== -->
+<section id="sec-web" class="sec">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <div class="sec-tag">[2] // application portfolio</div>
+      <h2>Selected <span class="out">builds</span></h2>
+      <p class="sec-sub">Web applications and utilities — most architected as <b>single-file, zero-dependency</b> builds. The complete web archive is deployed and live. Hover to preview, click for the spec sheet.</p>
+    </header>
+
+    <a class="site-card reveal" href="https://ai-dhivyansh.edgeone.dev" target="_blank" rel="noopener">
+      <span class="sc-left">
+        <span class="sc-tag">remote · live deploy</span>
+        <span class="sc-name">ai-dhivyansh<em>.edgeone.dev</em></span>
+        <span class="sc-desc">My second website — the complete web-projects archive. Every portal, dashboard and experiment, deployed and browsable on EdgeOne. This portfolio's siblings all live there.</span>
+      </span>
+      <span class="sc-go">open ↗</span>
+    </a>
+
+    <div id="projList" class="reveal"></div>
+  </div>
+</section>
+
+<!-- floating preview -->
+<div id="preview" aria-hidden="true">
+  <div class="pv-inner">
+    <div class="mock" data-m="neurophage">
+      <div class="mock-bar"><i></i><i></i><i></i>NEUROPHAGE — lab escape</div>
+      <div style="color:#e67e80;font-size:11px;font-family:var(--disp);letter-spacing:0.1em;margin-bottom:8px">SECTOR 12 // LAB ANOMALY</div>
+      <div class="mline w80"></div><div class="mline w60"></div>
+      <span class="mbtn" style="background:#e67e80;color:#10150f">PLAY NEUROPHAGE</span>
+    </div>
+    <div class="mock" data-m="messagen">
+      <div class="mock-bar"><i></i><i></i><i></i>messagen · encrypted</div>
+      <div class="m-bub l">your keys never leave this device.</div>
+      <div class="m-bub r">seen 12:04 — e2ee verified</div>
+      <div class="m-inrow"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dbbc7f" stroke-width="2"><rect x="5" y="11" width="14" height="9"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>type a secure message…</div>
+    </div>
+    <div class="mock" data-m="drizzle">
+      <div class="mock-bar"><i></i><i></i><i></i>drizzle — storage</div>
+      <div class="m-file"><span>assets/</span><span>1.2 GB</span></div>
+      <div class="m-file"><span>demos/final_render.mp4</span><span>348 MB</span></div>
+      <div class="m-file"><span>prompts.txt</span><span>12 KB</span></div>
+      <div class="m-usage"><i></i></div>
+    </div>
+    <div class="mock" data-m="ganaga">
+      <div class="m-clock"><b id="pvClock">00:00:00</b><span>ganaga — ambient time</span></div>
+    </div>
+    <div class="pv-label" id="pvLabel"></div>
+  </div>
+</div>
+
+<!-- project modal -->
+<div id="modal" class="modal" hidden>
+  <div class="modal-back" id="modalBack"></div>
+  <div class="modal-card">
+    <button class="modal-x" id="modalX" aria-label="close">
+      <svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none"><path d="M5 5l14 14M19 5L5 19"/></svg>
+    </button>
+    <div class="modal-tag" id="mdTag"></div>
+    <h3 class="modal-name" id="mdName"></h3>
+    <div class="modal-tag2" id="mdTag2"></div>
+    <p class="modal-desc" id="mdDesc"></p>
+    <ul class="modal-feats" id="mdFeats"></ul>
+    <div class="modal-tags" id="mdTags"></div>
+  </div>
+</div>
+
+<!-- ==================== 3 · FULL INDEX ==================== -->
+<section id="sec-index" class="sec">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <div class="sec-tag">[3] // the full index</div>
+      <h2>Everything on <span class="out">disk</span></h2>
+      <p class="sec-sub">The complete directory — every app, game, tool and experiment on the drive, straight from the file system. <b>Filter by type</b> and hover for the inspector.</p>
+    </header>
+    <div class="reveal">
+      <div class="fm-stats" id="fmStats"></div>
+      <div class="fm-tabs" id="fmTabs">
+        <button class="fm-tab on" data-f="all">all</button>
+        <button class="fm-tab" data-f="apps">apps</button>
+        <button class="fm-tab" data-f="games">games</button>
+        <button class="fm-tab" data-f="ai">ai</button>
+        <button class="fm-tab" data-f="prompts">prompts</button>
+        <button class="fm-tab" data-f="archive">archive</button>
+      </div>
+      <div class="fm-grid" id="fmGrid"></div>
+      <div class="fm-inspect" id="fmInspect"><span class="pth">~/</span><span>hover an object to inspect it.</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 4 · GAME ==================== -->
+<section id="sec-game" class="sec">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <div class="sec-tag">[4] // interactive media</div>
+      <h2>Game <span class="out">engineering</span></h2>
+      <p class="sec-sub">2D physics loops, 3D entity systems, Roblox AI NPCs — and one shipped clicker the internet actually played. The clicker below is a <b>playable browser remake</b>. Yes, really playable.</p>
+    </header>
+    <div class="game-grid">
+      <div class="reveal">
+        <div class="eng">
+          <span class="chip">python · 2d</span>
+          <h3>Pygame</h3>
+          <p>2D physics, sprite management and event loops — small engines built to understand the loop under everything.</p>
+        </div>
+        <div class="eng">
+          <span class="chip">python · 3d</span>
+          <h3>Ursina</h3>
+          <p>3D coordinate systems and entity rendering — interactive scenes from a one-file prototype mindset.</p>
+        </div>
+        <div class="eng">
+          <span class="chip">luau · roblox</span>
+          <h3>Roblox / Luau</h3>
+          <p>Custom game mechanics, interactive AI-driven NPC logic and player systems — Place2.rbxl on disk is the current lab.</p>
+        </div>
+        <div class="eng">
+          <span class="chip">shipped</span>
+          <h3>Punch Monkey Clicker</h3>
+          <p>Original title created and submitted to web gaming platforms — <b style="color:var(--fg)">Poki</b> and <b style="color:var(--fg)">CrazyGames</b>. Flappy Java, Tic-Tac-Toe and the Dino rebuild ship alongside it.</p>
+        </div>
+      </div>
+      <div class="clicker reveal">
+        <div class="term-bar"><span class="tb-dot"></span>punch-monkey-clicker — playable remake</div>
+        <div class="ck-stage" id="ckStage">
+          <svg id="monkey" viewBox="0 0 220 220" aria-label="punch the monkey">
+            <g>
+              <circle cx="52" cy="90" r="28" fill="#6e4a30"/><circle cx="52" cy="90" r="14" fill="#c99b62"/>
+              <circle cx="168" cy="90" r="28" fill="#6e4a30"/><circle cx="168" cy="90" r="14" fill="#c99b62"/>
+              <circle cx="110" cy="106" r="70" fill="#7c5436"/>
+              <path d="M104 38 q-4 -20 14 -24 q-9 9 -5 24 z" fill="#5a3c25"/>
+              <ellipse cx="110" cy="120" rx="52" ry="44" fill="#d9ab72"/>
+              <g id="eyesOpen">
+                <circle cx="88" cy="97" r="8" fill="#241a10"/><circle cx="132" cy="97" r="8" fill="#241a10"/>
+                <circle cx="90.5" cy="94.5" r="2.6" fill="#f4ead2"/><circle cx="134.5" cy="94.5" r="2.6" fill="#f4ead2"/>
+              </g>
+              <g id="eyesHit" opacity="0" stroke="#241a10" stroke-width="5" stroke-linecap="round">
+                <path d="M80 91 l16 12 M96 91 l-16 12"/><path d="M124 91 l16 12 M140 91 l-16 12"/>
+              </g>
+              <circle cx="103" cy="124" r="3.6" fill="#4a3120"/><circle cx="119" cy="124" r="3.6" fill="#4a3120"/>
+              <path d="M88 140 q23 17 46 0" stroke="#4a3120" stroke-width="5" fill="none" stroke-linecap="round"/>
+            </g>
+          </svg>
+        </div>
+        <div class="ck-stats"><span>PUNCHES <b id="ckCount">0</b></span><span>RATE <b id="ckPps">0</b>/s</span></div>
+        <div class="ck-status" id="ckStatus">click the monkey. that's the tutorial.</div>
+        <div class="ck-foot"><span>punch monkey clicker — originally on Poki &amp; CrazyGames</span><button id="ckSfx">sfx: on</button></div>
+      </div>
+    </div>
+    <div class="mt-row reveal">
+      <span class="mt-label">more on disk →</span>
+      <button class="mt-chip" data-f="games">Flappy Java</button>
+      <button class="mt-chip" data-f="games">Tic-Tac-Toe 1.0</button>
+      <button class="mt-chip" data-f="games">Dino.html</button>
+      <button class="mt-chip" data-f="games">coconut Game</button>
+      <button class="mt-chip" data-f="games">gAME.HTML</button>
+      <button class="mt-chip" data-f="games">Place2.rbxl</button>
+      <button class="mt-chip" data-f="games">Responsive Tic-Tac_toe</button>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 5 · AI ==================== -->
+<section id="sec-ai" class="sec">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <div class="sec-tag">[5] // ai infrastructure &amp; generation</div>
+      <h2>Local intelligence,<br><span class="out">generative output</span></h2>
+      <p class="sec-sub">Private, offline inference on my own hardware — tunneled, tested, and wired into applications. And on the creative side: <b>structured prompts as an engineering discipline</b>, whether the output is an image or a full music track.</p>
+    </header>
+    <div class="ai-grid">
+      <div class="pipe reveal">
+        <div class="pipe-item">
+          <h3><span>01</span>OLLAMA</h3>
+          <p>Local LLM runtime — private, offline intelligence workflows running directly on the workstation. On 8 GB of RAM, no less. That's the fun part.</p>
+        </div>
+        <div class="pipe-item">
+          <h3><span>02</span>OPEN WEBUI</h3>
+          <p>Self-hosted chat interface layered on top of local models for everyday use.</p>
+        </div>
+        <div class="pipe-item">
+          <h3><span>03</span>COLAB × PINGGY</h3>
+          <p>Google Colab environments paired with Pinggy reverse SSH tunnels — exposing local ports for remote API testing and model prototyping.</p>
+        </div>
+        <div class="pipe-item">
+          <h3><span>04</span>GEMINI API</h3>
+          <p>Google AI Studio endpoints integrated directly into custom web applications and developer tools — Gemini-bot, Gemma experiments and beyond.</p>
+        </div>
+      </div>
+      <div class="synth reveal">
+        <div class="sy-head"><span>structured prompt → structured sound</span><span id="syState" class="dim">idle</span></div>
+        <div class="sy-body">
+          <div class="gchips" id="gchips">
+            <button class="gchip on" data-g="waltz">baroque waltz</button>
+            <button class="gchip" data-g="phonk">brazilian phonk</button>
+            <button class="gchip" data-g="latin">latin pop</button>
+          </div>
+          <div class="prompt-box" id="promptBox"></div>
+          <div class="sy-transport">
+            <button class="playbtn" id="playBtn" aria-label="play / stop">
+              <svg id="icPlay" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>
+              <svg id="icStop" width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="5" y="5" width="14" height="14"/></svg>
+            </button>
+            <div id="leds"></div>
+            <span class="ledbar" id="ledBar"></span>
+          </div>
+          <canvas id="viz" width="600" height="110"></canvas>
+          <div class="sy-note">synthesized live in your browser — WebAudio oscillators, zero samples. try <b class="ac">music phonk</b> in the shell.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 6 · TOYS ==================== -->
+<section id="sec-toys" class="sec">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <div class="sec-tag">[6] // product design &amp; entrepreneurship</div>
+      <h2>Anubhuti — <span class="out">design for the senses</span></h2>
+      <p class="sec-sub">Co-authored a complete product development deck, financial model and pitch presentation for a <b>two-tier sensory toy line</b> — fully aligned with UN Sustainable Development Goals around inclusive play, accessibility and sustainable manufacturing. Touch the prototypes below; they respond.</p>
+    </header>
+    <div class="toy-grid">
+      <div class="toy reveal">
+        <div class="toy-head">
+          <h3>Sparsh <span class="dim" style="font-size:.85rem;font-family:var(--mono);font-weight:400">— tactile</span></h3>
+          <p>A sensory-focused variant built for grounding and tactile exploration. Run your cursor over the surface.</p>
+        </div>
+        <div class="toy-stage" id="sparshStage"><div id="sparshGrid"></div></div>
+        <ul class="toy-specs">
+          <li>grounding textures for calm, tactile exploration</li>
+          <li>weighted core — pressure input for self-regulation</li>
+          <li>materials selected for safe, repeated handling</li>
+        </ul>
+      </div>
+      <div class="toy reveal">
+        <div class="toy-head">
+          <h3>Gati <span class="dim" style="font-size:.85rem;font-family:var(--mono);font-weight:400">— kinetic</span></h3>
+          <p>A movement-oriented variant designed for dynamic kinetic engagement. Click to add energy.</p>
+        </div>
+        <div class="toy-stage" id="gatiStage">
+          <div class="pend-wrap" id="pendWrap"><div class="pend-arm"></div></div>
+        </div>
+        <ul class="toy-specs">
+          <li>dynamic motion feedback for kinetic play</li>
+          <li>balance &amp; momentum as core mechanics</li>
+          <li>durability tuned for high-energy use</li>
+        </ul>
+      </div>
+    </div>
+    <div class="sdg-row reveal">
+      <span class="sdg"><b>SDG 3</b> good health &amp; well-being</span>
+      <span class="sdg"><b>SDG 4</b> quality education</span>
+      <span class="sdg"><b>SDG 10</b> reduced inequalities</span>
+      <span class="sdg"><b>SDG 12</b> responsible production</span>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 7 · MIND ==================== -->
+<section id="sec-mind" class="sec">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <div class="sec-tag">[7] // research, analysis &amp; strategy</div>
+      <h2>Diplomacy &amp;<br><span class="out">the endgame</span></h2>
+      <p class="sec-sub">Strategy is one discipline whether the board is a conference room or sixty-four squares. I analyze text-based chess positions — positional structures, piece mobility, long-term plans — the same way I prepare a position paper.</p>
+    </header>
+    <div class="mind-grid">
+      <div class="reveal">
+        <div class="mun">
+          <h3>Digital Diplomacy — MUN Delegate</h3>
+          <p>Represented global cybersecurity interests at conference: crafted speeches and position papers on digital infrastructure defense, cyber literacy and international data-protection standards.</p>
+        </div>
+        <div class="mun" style="border-left-color:var(--aqua)">
+          <h3>Deliverables</h3>
+          <p>Position papers · prepared speeches · caucus strategy — arguing for defense of the infrastructure everyone else assumes will just keep working.</p>
+        </div>
+        <div class="mun" style="border-left-color:var(--blue)">
+          <h3>Strategic &amp; Tactical Games</h3>
+          <p>Chess positions broken down analytically: structures, mobility maps, and the long-term plan behind the immediate tactic.</p>
+        </div>
+      </div>
+      <div class="chessbox reveal">
+        <div class="sp-tag" style="margin-bottom:14px">// morphy vs. allies — paris opera house, 1858 · final position after 17.Rd8#</div>
+        <div id="board"></div>
+        <div class="fen">FEN: 1n1Rkb1r/p4ppp/4q3/4p1B1/4P3/8/PPP2PPP/2K5 b - - 0 17</div>
+        <div class="anno" id="anno">Hover a piece on the board to read the positional note. Every piece left on this board has a job.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== 8 · TERM ==================== -->
+<section id="sec-term" class="sec">
+  <div class="wrap">
+    <header class="sec-head reveal">
+      <div class="sec-tag">[8] // the shell</div>
+      <h2>Talk to the <span class="out">machine</span></h2>
+      <p class="sec-sub">A real shell, not a picture of one. Type <b>help</b>, browse the directory with <b>index</b>, open the archive with <b>archive</b> — and yes, <b>sudo hire-me</b> answers honestly.</p>
+    </header>
+    <div class="term reveal">
+      <div class="term-bar"><span class="tb-dot"></span>mrcuriosity@DESKTOP-OCTC3BM: ~ — bash</div>
+      <div class="term-big-body" id="tOut"></div>
+      <div class="t-in"><span class="t-ps1">mrcuriosity@DESKTOP-OCTC3BM:~$</span><input id="tIn" autocomplete="off" spellcheck="false" aria-label="terminal input"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== tmux bar ==================== -->
+<footer id="tmux">
+  <div class="tmx-left">
+    <span class="tmx-session">mrcuriosity</span>
+    <nav id="tmxWins"></nav>
+  </div>
+  <div class="tmx-right"><span id="tmxSec">0:main</span><b id="tmxUp">up 0:00:00</b><b id="tmxClock">--:--:--</b></div>
+</footer>
+
+<div id="toast" role="status"></div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SITE_URL='https://ai-dhivyansh.edgeone.dev';
+
+/* ============ sections / tmux windows ============ */
+const SECTIONS=[
+  ['main','0:main'],['sys','1:sys'],['web','2:web'],['index','3:index'],['game','4:game'],
+  ['ai','5:ai'],['toys','6:toys'],['mind','7:mind'],['term','8:term']
+];
+const tmxWins=$('#tmxWins');
+SECTIONS.forEach(([id,label])=>{
+  const b=document.createElement('button');
+  b.textContent=label;b.dataset.sec=id;
+  b.onclick=()=>go(id);tmxWins.appendChild(b);
+});
+function go(id){
+  const el=document.getElementById('sec-'+id);
+  if(el)el.scrollIntoView({behavior:reduced?'auto':'smooth'});
+}
+ $$('[data-go]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+
+/* scroll spy */
+const spy=()=>{
+  let cur='main';
+  const mid=innerHeight*0.42;
+  SECTIONS.forEach(([id])=>{
+    const el=document.getElementById('sec-'+id);
+    if(el&&el.getBoundingClientRect().top<=mid)cur=id;
+  });
+  const i=SECTIONS.findIndex(s=>s[0]===cur);
+  $$('#tmxWins button').forEach((b,j)=>b.classList.toggle('act',j===i));
+  $('#tmxSec').textContent=SECTIONS[i][1];
+};
+addEventListener('scroll',spy,{passive:true});spy();
+
+/* clock + uptime */
+const t0=Date.now();
+const pad=n=>String(n).padStart(2,'0');
+setInterval(()=>{
+  const d=new Date();
+  const t=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+  $('#tmxClock').textContent=t;
+  const pv=$('#pvClock');if(pv)pv.textContent=t;
+  let s=Math.floor((Date.now()-t0)/1000);
+  const h=Math.floor(s/3600);s%=3600;const m=Math.floor(s/60);s%=60;
+  $('#tmxUp').textContent=`up ${h}:${pad(m)}:${pad(s)}`;
+},1000);
+
+/* keyboard: digits jump, / opens shell */
+document.addEventListener('keydown',e=>{
+  if(e.target.matches('input,textarea'))return;
+  if(!$('#boot').classList.contains('off'))return;
+  if(/^[0-8]$/.test(e.key))go(SECTIONS[+e.key][0]);
+  if(e.key==='/'){e.preventDefault();go('term');setTimeout(()=>$('#tIn').focus(),450);}
+});
+
+/* reveal on scroll */
+const io=new IntersectionObserver(es=>es.forEach(e=>{
+  if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}
+}),{threshold:.12});
+ $$('.reveal').forEach(el=>io.observe(el));
+
+/* ============ ticker ============ */
+(()=>{
+  const items='PYGAME,URSINA,LUAU,ANTIGRAVITY IDE,WINDOWS 11,OLLAMA,GEMINI API,EDGEONE,ROBLOX STUDIO,PLACE2.RBXL,POKI,CRAZYGAMES,WEB AUDIO,EVERFOREST,RYZEN 3 5300U,8GB & FEARLESS'.split(',');
+  const half=items.map(i=>`<span class="tk">${i}<i>◆</i></span>`).join('');
+  $('#tickerTrack').innerHTML=half+half;
+})();
+
+/* ============ boot sequence ============ */
+(()=>{
+  const boot=$('#boot'),log=$('#bootLog'),nEl=$('#bootN');
+  const entries=$$('.grub-entry');let sel=0,done=false,n=3,timer;
+  const BOOTLINES=[
+    '[ <span class="ok">OK</span> ] amd ryzen 3 5300u @ 2.60 ghz — detected',
+    '[ <span class="ok">OK</span> ] memory: 8.00 gb mapped (7.34 usable)',
+    '[ <span class="ok">OK</span> ] nvme: 74 gb / 477 gb — plenty of room for ideas',
+    '[ <span class="ok">OK</span> ] spawned tmux session <span class="ok">mrcuriosity</span>'
+  ];
+  if(reduced){boot.classList.add('off');setTimeout(()=>boot.remove(),700);startFetch(true);return;}
+  const select=i=>{sel=(i+entries.length)%entries.length;
+    entries.forEach((e,j)=>{e.classList.toggle('sel',j===sel);e.querySelector('.ge-mark').textContent=j===sel?'▸':'';});};
+  const bootNow=()=>{
+    if(done)return;done=true;clearInterval(timer);
+    const jokes=['windows 11 booted — it asked for a microsoft account, a product key, and our firstborn. we came back.','memory is fine. curiosity is unlimited.'];
+    if(sel!==0){log.innerHTML+='> '+jokes[sel-1]+'\n';}
+    BOOTLINES.forEach((l,i)=>setTimeout(()=>{log.innerHTML+=l+'\n';},i*160));
+    setTimeout(()=>{boot.classList.add('off');setTimeout(()=>boot.remove(),700);startFetch(false);},BOOTLINES.length*160+420);
+  };
+  timer=setInterval(()=>{n--;nEl.textContent=n;if(n<=0)bootNow();},850);
+  boot.addEventListener('keydown',e=>{
+    if(e.key==='ArrowDown'){e.preventDefault();select(sel+1);}
+    if(e.key==='ArrowUp'){e.preventDefault();select(sel-1);}
+    if(e.key==='Enter')bootNow();
+  });
+  boot.addEventListener('click',bootNow);
+  boot.tabIndex=-1;
+})();
+
+/* ============ fastfetch ============ */
+const FF_ART=
+`╭───╮ ╭───╮
+│   │ │   │
+╰───╯ ╰───╯
+╭───╮ ╭───╮
+│   │ │   │
+╰───╯ ╰───╯`;
+const pal=['#a7c080','#dbbc7f','#e67e80','#e69875','#83c092','#7fbbb3','#d699b6','#d3c6aa','#8a9689','#5c685e'];
+const ffPairs=[
+  {raw:`<span class="ff-user">mrcuriosity</span><span class="dim">@</span><span class="ff-user">DESKTOP-OCTC3BM</span>`},
+  {raw:`<span class="ff-rule">${'─'.repeat(46)}</span>`},
+  {k:'OS',v:`Windows 11 Home · x86_64 (64-bit)`},
+  {k:'Host',v:`DESKTOP-OCTC3BM`},
+  {k:'CPU',v:`AMD Ryzen 3 5300U <span class="dim">(4C/8T)</span> @ 2.60 GHz`},
+  {k:'GPU',v:`AMD Radeon(TM) Graphics`},
+  {k:'Memory',v:`7.34 GiB / 8.00 GiB`},
+  {k:'Disk',v:`74 GB / 477 GB <span class="dim">(15% — plenty of room for ideas)</span>`},
+  {k:'Input',v:`keyboard + mouse <span class="dim">(no pen or touch)</span>`},
+  {k:'Editor',v:`Antigravity IDE <span class="dim">(agentic workflows)</span>`},
+  {k:'AI',v:`Ollama · Open WebUI · Gemini API`},
+  {k:'Deploy',v:`<span class="hl">ai-dhivyansh.edgeone.dev</span>`},
+  {k:'Mission',v:`ideas → production, with AI as the power tool`},
+  {raw:`<span class="dim">${pal.map(c=>`<span class="pdot" style="background:${c}"></span>`).join('')}</span>`}
+];
+function ffHTML(n){
+  return ffPairs.slice(0,n).map(p=>
+    p.raw?`<div class="ff-l">${p.raw}</div>`
+         :`<div class="ff-l"><span class="k">${p.k}</span><span class="v">${p.v}</span></div>`
+  ).join('');
+}
+let fetchStarted=false;
+function startFetch(instant){
+  if(fetchStarted)return;fetchStarted=true;
+  $('#ffArt').innerHTML=FF_ART.split('\n').map(l=>`<span style="color:var(--blue)">${l}</span>`).join('\n');
+  const box=$('#ffLines');
+  if(instant||reduced){box.innerHTML=ffHTML(ffPairs.length);return;}
+  let i=0;
+  const step=()=>{
+    if(i<ffPairs.length){
+      box.innerHTML=ffHTML(++i)+'<span class="fcaret"></span>';
+      setTimeout(step,115);
+    }
+  };
+  setTimeout(step,350);
+}
+
+/* ============ systems map ============ */
+(()=>{
+  const N={
+    archive:{x:350,y:58,w:230,n:'THE ARCHIVE · LEGACY',d:'The OptiPlex era, retired with honors — Zorin OS Core, GRUB 2.12 skinned with Tela × WhiteSur, rclone-mounted Google Drive, Sigma FM, Sober. The lessons transferred; the machine rests.'},
+    win11:{x:225,y:150,w:180,n:'WINDOWS 11 HOME',d:'Daily driver. The lab, the arcade and the studio all share one install — tuned, cleaned, and bent to the workflow.'},
+    antigravity:{x:745,y:140,w:200,n:'ANTIGRAVITY IDE',d:'Primary editor. Agentic AI workflows for generating, iterating and shipping full-stack code — the power tool behind every build on this page.'},
+    octc:{x:500,y:290,w:210,h:60,n:'DESKTOP-OCTC3BM',d:'The current rig — AMD Ryzen 3 5300U @ 2.60 GHz, 8 GB RAM, AMD Radeon Graphics. Proof that shipping is about intent, not hardware budgets.'},
+    python:{x:130,y:315,w:180,n:'PYTHON · PYGAME',d:'2D physics, sprite management, event loops — plus Ursina for 3D entity scenes. Where the engines began.'},
+    gemini:{x:880,y:300,w:150,n:'GEMINI API',d:'Google AI Studio endpoints integrated directly into custom web applications and developer tools.'},
+    localai:{x:690,y:450,w:190,n:'OLLAMA + WEBUI',d:'Private, offline inference — local LLM runtimes squeezed onto 8 GB of RAM. It fits. Barely. That\u2019s the fun part.'},
+    storage:{x:330,y:465,w:160,n:'477 GB NVME',d:'74 GB used of 477 GB — 15% full, 100% curious.'},
+    roblox:{x:135,y:460,w:180,n:'ROBLOX STUDIO',d:'Home of Place2.rbxl — custom mechanics, AI-driven NPC logic and player systems in Luau.'},
+    edgeone:{x:890,y:470,w:190,n:'EDGEONE DEPLOY',d:'Remote deploy target — the web-projects archive live at ai-dhivyansh.edgeone.dev.'}
+  };
+  const E=[
+    ['octc','win11'],['octc','antigravity'],['octc','python'],['octc','roblox'],
+    ['octc','gemini'],['octc','localai'],['octc','storage'],
+    ['octc','edgeone','dash'],['archive','octc','dash']
+  ];
+  const svg=$('#sysmap'),NS='http://www.w3.org/2000/svg';
+  const edgeEls=[];
+  E.forEach(([a,b,st])=>{
+    const A=N[a],B=N[b],mx=(A.x+B.x)/2;
+    const d=`M${A.x} ${A.y} C ${mx} ${A.y}, ${mx} ${B.y}, ${B.x} ${B.y}`;
+    const p=document.createElementNS(NS,'path');
+    p.setAttribute('d',d);p.setAttribute('class','edge'+(st?' dash':''));
+    svg.appendChild(p);edgeEls.push({a,b,el:p});
+    if(st==='dash'){
+      const c=document.createElementNS(NS,'circle');
+      c.setAttribute('r','2.6');c.setAttribute('fill','#a7c080');
+      const am=document.createElementNS(NS,'animateMotion');
+      am.setAttribute('dur','2.4s');am.setAttribute('repeatCount','indefinite');am.setAttribute('path',d);
+      c.appendChild(am);svg.appendChild(c);
+    }
+  });
+  Object.entries(N).forEach(([id,n])=>{
+    const g=document.createElementNS(NS,'g');
+    const w=n.w||150,h=n.h||46;
+    g.setAttribute('class','nd'+(id==='octc'?' hub':''));
+    const r=document.createElementNS(NS,'rect');
+    r.setAttribute('x',n.x-w/2);r.setAttribute('y',n.y-h/2);
+    r.setAttribute('width',w);r.setAttribute('height',h);
+    g.appendChild(r);
+    const t=document.createElementNS(NS,'text');
+    t.setAttribute('x',n.x);t.setAttribute('y',n.y+4);t.setAttribute('text-anchor','middle');
+    t.textContent=n.n;g.appendChild(t);
+    const show=()=>{
+      svg.classList.add('focus');g.classList.add('on');
+      let cnt=0;
+      edgeEls.forEach(e=>{
+        const on=e.a===id||e.b===id;
+        e.el.classList.toggle('on',on);if(on)cnt++;
+      });
+      $('#spName').textContent=n.n;
+      $('#spDesc').textContent=n.d;
+      $('#spMeta').textContent=`connected via ${cnt} link${cnt===1?'':'s'} · node id: ${id}`;
+    };
+    const hide=()=>{
+      svg.classList.remove('focus');g.classList.remove('on');
+      edgeEls.forEach(e=>e.el.classList.remove('on'));
+    };
+    g.addEventListener('mouseenter',show);
+    g.addEventListener('mouseleave',hide);
+    svg.appendChild(g);
+  });
+  $('#spName').textContent=N.octc.n;
+  $('#spDesc').textContent=N.octc.d;
+  $('#spMeta').textContent='hub node · 9 links · hover any node to inspect';
+})();
+
+/* ============ projects ============ */
+const PROJECTS=[
+  {id:'Neurophage',name:'Neurophage',tag:'The Thinking Game.',mock:'neurophage',
+   tags:['single-file','html5/css3/js','PC And Mobile Compatible'],
+   desc:'NEUROPHAGE — a top-down stealth-horror lab escape. Outsmart a brain-hungry demon doctor across 12 sectors, craft his cure, and escape.',
+   feats:['Top-Down Stealth Horror Gameplay','Procedurally Generated Levels','Inventory System & Item Crafting','Multiple Difficulties And Modes','Play Online: <a href="https://neurophage.edgeone.dev" target="_blank" rel="noopener">neurophage.edgeone.dev ↗</a>']},
+  {id:'messagen',name:'Messagen',tag:'privacy is the interface.',mock:'messagen',
+   tags:['ui prototype','encryption states','theme toggles'],
+   desc:'A privacy-focused encrypted messaging interface prototype where the design language itself communicates security — explicit encryption states, careful chat UI states, theme switching, and message-handling logic that treats privacy as a feature, not a footnote.',
+   feats:['modern chat UI states (sent / delivered / read)','encryption-status indicators in the interface','full theme toggle system','secure message-handling logic prototype']},
+  {id:'drizzle',name:'Drizzle',tag:'your cloud, one pane.',mock:'drizzle',
+   tags:['dashboard','file preview','minimal'],
+   desc:'A clean, minimal dashboard prototype for custom cloud storage management — file trees, previews and usage at a glance, with a restrained visual system built for scanning, not admiring.',
+   feats:['custom cloud-storage management view','inline file previewing','storage usage visualization','minimal, distraction-free visual system']},
+  {id:'ganaga',name:'Ganaga',tag:'time, nothing else.',mock:'ganaga',
+   tags:['typography','ambient','utility'],
+   desc:'A full-screen minimalist digital clock designed to be glanced at from across the room — type-first, distraction-free, scaling cleanly to any viewport. Zero chrome, all signal.',
+   feats:['typography-first layout','full-screen ambient display mode','fluid responsive scaling','zero interface chrome']}
+];
+(()=>{
+  const list=$('#projList');
+  PROJECTS.forEach((p,i)=>{
+    const el=document.createElement('article');
+    el.className='proj';el.dataset.mock=p.mock;el.tabIndex=0;
+    el.innerHTML=`<span class="p-idx">0${i+1}</span><h3 class="p-name">${p.name}</h3>
+      <span class="p-info">${p.tag}<span class="tags">${p.tags.join(' · ')}</span></span>
+      <span class="p-arr"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17L17 7M9 7h8v8"/></svg></span>`;
+    el.addEventListener('click',()=>openModal(p));
+    el.addEventListener('keydown',e=>{if(e.key==='Enter')openModal(p);});
+    list.appendChild(el);
+  });
+  const pv=$('#preview'),pvLabel=$('#pvLabel');
+  let mx=0,my=0,px=0,py=0,vis=false;
+  const fine=matchMedia('(hover:hover) and (min-width:1001px)').matches;
+  if(fine){
+    addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+    (function loop(){
+      px+=(mx-px)*.16;py+=(my-py)*.16;
+      pv.style.transform=`translate(${Math.min(px+26,innerWidth-320)}px,${py-120}px) scale(${vis?1:.96})`;
+      requestAnimationFrame(loop);
+    })();
+    $$('.proj').forEach(el=>{
+      el.addEventListener('mouseenter',()=>{
+        $$('.mock').forEach(m=>m.classList.toggle('on',m.dataset.m===el.dataset.mock));
+        const p=PROJECTS.find(x=>x.mock===el.dataset.mock);
+        pvLabel.textContent=p?`${p.name} — ${p.tag}`:'';
+        vis=true;pv.classList.add('show');
+      });
+      el.addEventListener('mouseleave',()=>{vis=false;pv.classList.remove('show');});
+    });
+  }
+})();
+function openModal(p){
+  $('#mdTag').textContent=`build 0${PROJECTS.indexOf(p)+1} — spec sheet`;
+  $('#mdName').textContent=p.name;
+  $('#mdTag2').textContent=p.tag;
+  $('#mdDesc').textContent=p.desc;
+  $('#mdFeats').innerHTML=p.feats.map(f=>`<li>${f}</li>`).join('');
+  $('#mdTags').innerHTML=p.tags.map(t=>`<span>${t}</span>`).join('');
+  $('#modal').hidden=false;document.body.style.overflow='hidden';
+}
+function closeModal(){$('#modal').hidden=true;document.body.style.overflow='';}
+ $('#modalX').addEventListener('click',closeModal);
+ $('#modalBack').addEventListener('click',closeModal);
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').hidden)closeModal();});
+
+/* ============ FULL INDEX — the directory on disk ============ */
+const INDEX=[
+  {n:'Ai-Web',t:'dir',c:'apps',note:'AI web portal experiments — browser-side intelligence UIs.'},
+  {n:'Alarmi',t:'dir',c:'apps',note:'Alarm & focus-timer utility. Wakes you up; judges you silently.'},
+  {n:'Autoclicker',t:'dir',c:'apps',note:'Configurable auto-clicker — CPS settings, hotkeys, the works.'},
+  {n:'Bruteforce',t:'dir',c:'apps',note:'Password-audit sandbox built to understand brute-force mechanics. Educational, restrained, ethical.'},
+  {n:'CarbonOS',t:'dir',c:'apps',note:'Browser-based desktop OS concept — windows, apps and a desktop, all in a tab.'},
+  {n:'coconut Game',t:'dir',c:'games',note:'A game. About coconuts. The title is honest; the gameplay is addictive.'},
+  {n:'FakeOS-mordern',t:'dir',c:'apps',note:'Modern fake-OS shell interface — a desktop illusion in the browser. Verbatim filename, sic included.'},
+  {n:'Games',t:'dir',c:'games',note:'The games drawer — assorted builds and half-finished fever dreams.'},
+  {n:'Gemini-bot',t:'dir',c:'ai',note:'Gemini API chatbot — cloud intelligence with custom persona logic.'},
+  {n:'Haipy.ai',t:'dir',c:'ai',note:'AI assistant experiment — conversational UI on top of generative models.'},
+  {n:'IdeaSpark',t:'dir',c:'apps',note:'Idea-generation tool. Feed it a seed; it throws back sparks.'},
+  {n:'Internet Speed Test',t:'dir',c:'apps',note:'Browser speed-test utility — clean UI, honest numbers.'},
+  {n:'Neurophage',t:'dir',c:'games',note:'Top-down stealth-horror lab escape — outsmart the demon doctor across 12 sectors.'},
+  {n:'pythonProject',t:'dir',c:'games',note:'The pygame sandbox — where the 2D engines were born.'},
+  {n:'Responsive Tic-Tac_toe',t:'dir',c:'games',note:'Tic-tac-toe, responsive edition — plays on anything with pixels.'},
+  {n:'Windows',t:'dir',c:'apps',note:'System tweaks & Windows tooling — the new rig, bent to my will.'},
+  {n:'Calculator prmpt.txt',t:'txt',c:'prompts',note:'Structured prompt: calculator build spec.'},
+  {n:'Dino.html',t:'html',c:'games',note:'Chrome dino, rebuilt from scratch — no internet outage required.'},
+  {n:'Emergent prmpt.txt',t:'txt',c:'prompts',note:'Structured prompt: emergent-behavior experiments.'},
+  {n:'FakeOS-mordern.zip',t:'zip',c:'archive',note:'Packaged build of the fake-OS shell.'},
+  {n:'Flappy java(2).zip',t:'zip',c:'games',note:'Flappy clone, second iteration — the one where the physics felt right.'},
+  {n:'Flappy Java.zip',t:'zip',c:'games',note:'Flappy clone, first iteration — gravity was aspirational.'},
+  {n:'gAME.HTML',t:'html',c:'games',note:'Arcade prototype. Capitalization optional; shipping mandatory.'},
+  {n:'Gemma gemini api.txt',t:'txt',c:'prompts',note:'Gemma × Gemini API integration notes.'},
+  {n:'Haipy.ai.zip',t:'zip',c:'archive',note:'Packaged build of the AI assistant.'},
+  {n:'Memory.txt',t:'txt',c:'prompts',note:'Notes to future me. Read annually.'},
+  {n:'Node js Path.txt',t:'txt',c:'prompts',note:'Node.js environment pathing notes.'},
+  {n:'Place2.rbxl',t:'rbxl',c:'games',note:'Roblox place file — NPC logic and player mechanics in Luau.'},
+  {n:'Tic-Tac-Toe 1.0.zip',t:'zip',c:'games',note:'First shipped tic-tac-toe build. 1.0 forever.'},
+  {n:'ai-dhivyansh.edgeone.dev',t:'remote',c:'archive',note:'Remote mount — the full web-projects archive, live on EdgeOne. Click to open.'}
+];
+(()=>{
+  const ICON={
+    dir:'<svg width="16" height="16" viewBox="0 0 16 16"><path d="M1 3h5l1.5 2H15v8H1z" fill="#dbbc7f"/></svg>',
+    txt:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#8a9689" stroke-width="1.2"><path d="M3 1.5h7l3 3v10H3z"/><path d="M5.5 8h5M5.5 10.5h5M5.5 13h3"/></svg>',
+    html:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#83c092" stroke-width="1.4"><path d="M6 4L2.5 8 6 12M10 4l3.5 4L10 12"/></svg>',
+    zip:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#e69875" stroke-width="1.2"><rect x="2.5" y="2.5" width="11" height="11" rx="1.5"/><path d="M8 2.5v3M8 7v1.5M8 10.5v2"/></svg>',
+    rbxl:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#a7c080" stroke-width="1.2"><rect x="2" y="2" width="12" height="12" rx="2.5"/><path d="M6 6h4v4H6z"/></svg>',
+    remote:'<svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="#7fbbb3" stroke-width="1.3"><path d="M4.5 12.5a3 3 0 1 1 .6-5.9 4 4 0 0 1 7.8 1.2 2.4 2.4 0 0 1-.4 4.7z"/></svg>',
+    del:'<svg width="16" height="16" viewBox="0 0 16 16"><path d="M1 3h5l1.5 2H15v8H1z" fill="none" stroke="#e67e80" stroke-width="1.2"/><path d="M6 7.5l4 4M10 7.5l-4 4" stroke="#e67e80" stroke-width="1.4"/></svg>'
+  };
+  const grid=$('#fmGrid'),insp=$('#fmInspect'),stats=$('#fmStats');
+  const tabs=$$('#fmTabs .fm-tab');
+  let cur='all',selEl=null;
+  const pathFor=it=>it.t==='dir'?`~/${it.n}/`:`~/${it.n}`;
+  function render(){
+    grid.innerHTML='';
+    const items=INDEX.filter(d=>cur==='all'||d.c===cur);
+    items.forEach(it=>{
+      const el=document.createElement('div');
+      el.className='fm-item'+(it.del?' del':'')+(it.t==='remote'?' remote':'');
+      el.innerHTML=(it.del?ICON.del:ICON[it.t])+`<span class="nm">${esc(it.n)}${it.t==='dir'?'/':''}</span>`;
+      el.tabIndex=0;
+      const show=()=>{insp.innerHTML=`<span class="pth">${esc(pathFor(it))}</span><span>${esc(it.note)}</span>`;};
+      const sel=()=>{
+        if(selEl)selEl.classList.remove('sel');
+        el.classList.add('sel');selEl=el;show();
+        if(it.t==='remote')window.open(SITE_URL,'_blank');
+
+      };
+      el.addEventListener('mouseenter',show);
+      el.addEventListener('focus',show);
+      el.addEventListener('click',sel);
+      el.addEventListener('keydown',e=>{if(e.key==='Enter')sel();});
+      grid.appendChild(el);
+    });
+    const total=INDEX.length,rem=INDEX.filter(d=>d.t==='remote').length;
+    stats.textContent=`${total} objects · ${total-rem} active · ${rem} remote mount · showing ${items.length}`;
+  }
+  tabs.forEach(t=>t.addEventListener('click',()=>{
+    tabs.forEach(x=>x.classList.toggle('on',x===t));
+    cur=t.dataset.f;render();
+  }));
+  render();
+  /* "more on disk" chips in the games section jump here, pre-filtered */
+  $$('.mt-chip').forEach(c=>c.addEventListener('click',()=>{
+    const t=tabs.find(x=>x.dataset.f===c.dataset.f);
+    if(t)t.click();
+    go('index');
+  }));
+})();
+
+/* ============ clicker ============ */
+(()=>{
+  const mk=$('#monkey'),stage=$('#ckStage');
+  const countEl=$('#ckCount'),ppsEl=$('#ckPps'),status=$('#ckStatus');
+  let count=0,sfxOn=true,hits=[];
+  const MILES={10:'monkey warmed up.',25:'combo rhythm detected.',50:'the monkey demands more.',100:'persistence: unlocked.',250:'productivity: officially gone.'};
+  let actx=null;
+  function pop(){
+    if(!sfxOn)return;
+    try{
+      actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+      if(actx.state==='suspended')actx.resume();
+      const t=actx.currentTime,o=actx.createOscillator(),g=actx.createGain();
+      o.type='square';o.frequency.setValueAtTime(230,t);o.frequency.exponentialRampToValueAtTime(90,t+.08);
+      g.gain.setValueAtTime(.1,t);g.gain.exponentialRampToValueAtTime(.001,t+.09);
+      o.connect(g).connect(actx.destination);o.start(t);o.stop(t+.1);
+    }catch(e){}
+  }
+  mk.addEventListener('pointerdown',e=>{
+    count++;countEl.textContent=count;
+    hits.push(Date.now());
+    mk.classList.add('hit');
+    $('#eyesOpen').style.opacity=0;$('#eyesHit').style.opacity=1;
+    setTimeout(()=>{mk.classList.remove('hit');$('#eyesOpen').style.opacity=1;$('#eyesHit').style.opacity=0;},110);
+    const s=document.createElement('span');
+    s.className='plus1';
+    s.style.left=(28+Math.random()*44)+'%';s.style.bottom='30%';
+    s.style.color=count%25===0?'var(--amber)':'var(--accent)';
+    s.textContent=count%25===0?'COMBO +1':'+1';
+    stage.appendChild(s);setTimeout(()=>s.remove(),900);
+    if(MILES[count]){status.textContent='> '+MILES[count];status.classList.add('flash');setTimeout(()=>status.classList.remove('flash'),600);}
+    pop();
+  });
+  setInterval(()=>{
+    const now=Date.now();hits=hits.filter(t=>now-t<1000);
+    ppsEl.textContent=hits.length;
+  },250);
+  $('#ckSfx').addEventListener('click',e=>{
+    sfxOn=!sfxOn;e.target.textContent='sfx: '+(sfxOn?'on':'off');
+  });
+})();
+
+/* ============ generative music ============ */
+const GENRES={
+  waltz:{id:'waltz',label:'baroque waltz',bpm:100,steps:12,bars:4,
+    prompt:'&gt; generate: <b>baroque waltz</b> — key of A minor · 3/4 · 100 BPM · harpsichord lead, cello bass, airy string stabs · graceful ornamentation, oom-pah-pah lilt'},
+  phonk:{id:'phonk',label:'brazilian phonk',bpm:132,steps:16,bars:2,
+    prompt:'&gt; generate: <b>brazilian phonk</b> — 132 BPM · detuned 808 bass, metallic cowbell lead melody, tape-saturated drums, dark ambience'},
+  latin:{id:'latin',label:'latin pop',bpm:104,steps:16,bars:2,
+    prompt:'&gt; generate: <b>latin pop</b> — 104 BPM · syncopated bass line, claves &amp; shaker percussion, bright marimba riff, warm groove'}
+};
+let actx=null,master=null,analyser=null;
+function ensureAudio(){
+  if(!actx){
+    actx=new (window.AudioContext||window.webkitAudioContext)();
+    master=actx.createGain();master.gain.value=.55;
+    analyser=actx.createAnalyser();analyser.fftSize=256;analyser.smoothingTimeConstant=.8;
+    master.connect(analyser);analyser.connect(actx.destination);
+  }
+  if(actx.state==='suspended')actx.resume();
+}
+const NF=m=>440*Math.pow(2,(m-69)/12);
+let noiseBuf=null;
+function getNoise(){
+  if(!noiseBuf){
+    noiseBuf=actx.createBuffer(1,actx.sampleRate*.5,actx.sampleRate);
+    const d=noiseBuf.getChannelData(0);
+    for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  }
+  return noiseBuf;
+}
+function pluck(f,t,dur,type,vol){
+  const o=actx.createOscillator(),g=actx.createGain();
+  o.type=type;o.frequency.value=f;
+  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+.012);
+  g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+  o.connect(g).connect(master);o.start(t);o.stop(t+dur+.05);
+}
+function kick(t){
+  const o=actx.createOscillator(),g=actx.createGain();
+  o.type='sine';o.frequency.setValueAtTime(130,t);o.frequency.exponentialRampToValueAtTime(42,t+.18);
+  g.gain.setValueAtTime(.5,t);g.gain.exponentialRampToValueAtTime(.001,t+.22);
+  o.connect(g).connect(master);o.start(t);o.stop(t+.25);
+}
+function hat(t,open,vol){
+  const s=actx.createBufferSource();s.buffer=getNoise();
+  const f=actx.createBiquadFilter();f.type='highpass';f.frequency.value=7000;
+  const g=actx.createGain();
+  g.gain.setValueAtTime(vol,t);g.gain.exponentialRampToValueAtTime(.001,t+(open?.16:.045));
+  s.connect(f).connect(g).connect(master);s.start(t);s.stop(t+.2);
+}
+function snare(t){
+  const s=actx.createBufferSource();s.buffer=getNoise();
+  const f=actx.createBiquadFilter();f.type='bandpass';f.frequency.value=1800;f.Q.value=.8;
+  const g=actx.createGain();g.gain.setValueAtTime(.24,t);g.gain.exponentialRampToValueAtTime(.001,t+.13);
+  s.connect(f).connect(g).connect(master);s.start(t);s.stop(t+.2);
+  const o=actx.createOscillator(),g2=actx.createGain();
+  o.type='triangle';o.frequency.value=190;
+  g2.gain.setValueAtTime(.14,t);g2.gain.exponentialRampToValueAtTime(.001,t+.07);
+  o.connect(g2).connect(master);o.start(t);o.stop(t+.09);
+}
+function cowbell(t,f){
+  const g=actx.createGain();g.gain.setValueAtTime(.14,t);g.gain.exponentialRampToValueAtTime(.001,t+.14);
+  const bp=actx.createBiquadFilter();bp.type='bandpass';bp.frequency.value=f*1.8;bp.Q.value=2.5;
+  [f,f*1.5].forEach(fr=>{
+    const o=actx.createOscillator();o.type='square';o.frequency.value=fr;
+    o.connect(bp);o.start(t);o.stop(t+.16);
+  });
+  bp.connect(g).connect(master);
+}
+function bass8(t,f,dur){
+  const o=actx.createOscillator(),g=actx.createGain();
+  o.type='sine';o.frequency.setValueAtTime(f*1.05,t);o.frequency.exponentialRampToValueAtTime(f,t+.06);
+  g.gain.setValueAtTime(.42,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  o.connect(g).connect(master);o.start(t);o.stop(t+dur+.05);
+}
+function scheduleStep(g,gs,t){
+  const s=g.steps,bar=Math.floor(gs/s)%g.bars,st=gs%s;
+  if(g.id==='waltz'){
+    const roots=[45,41,48,40],chords=[[57,60,64],[53,57,60],[60,64,67],[56,59,64]];
+    if(st===0){pluck(NF(roots[bar]),t,1,'sine',.34);pluck(NF(roots[bar]+12),t,.9,'triangle',.09);}
+    if(st===4||st===8)chords[bar].forEach((m,i)=>pluck(NF(m),t+i*.012,.32,'triangle',.1));
+    const mel={0:[76,4],4:[72,2],6:[71,1],8:[69,4],12:[72,2],15:[74,1],16:[72,2],20:[69,4],
+      24:[67,2],27:[76,1],28:[74,2],32:[72,4],36:[71,2],40:[68,2],44:[71,4]};
+    const e=mel[gs%48];if(e)pluck(NF(e[0]),t,e[1]*.135,'triangle',.17);
+  }else if(g.id==='phonk'){
+    if(st%2===0)hat(t,false,st%4===0?.1:.06);
+    if(st===14)hat(t,true,.14);
+    if(st===0||st===8)kick(t);
+    if(st===4||st===12)snare(t);
+    const b={'0:0':[33,7],'0:10':[31,5],'1:0':[33,7],'1:10':[28,5]};
+    const be=b[bar+':'+st];if(be)bass8(t,NF(be[0]),be[1]*.14);
+    const cow={'0:0':76,'0:3':72,'0:6':74,'0:10':76,'0:12':79,'1:0':76,'1:3':72,'1:6':74,'1:10':72,'1:12':69};
+    const c=cow[bar+':'+st];if(c)cowbell(t,NF(c));
+  }else if(g.id==='latin'){
+    if([0,6,10].includes(st))kick(t);
+    if(st===4||st===12)snare(t);
+    if(st%2===0)hat(t,st===14,st%4===0?.09:.05);
+    const bs={0:45,3:45,6:52,10:48,13:43,14:45};
+    if(bs[st]!==undefined)pluck(NF(bs[st]),t,.26,'sine',.3);
+    const ld={'0:0':69,'0:2':72,'0:4':76,'0:7':74,'0:10':72,'0:12':69,'1:0':76,'1:3':74,'1:6':72,'1:10':74,'1:12':71};
+    const l=ld[bar+':'+st];if(l)pluck(NF(l),t,.3,'sine',.2);
+  }
+}
+let playing=false,curG='waltz',step=0,nextT=0,startT=0,timer=null;
+function selectGenre(id){
+  curG=id;
+  $$('.gchip').forEach(c=>c.classList.toggle('on',c.dataset.g===id));
+  $('#promptBox').innerHTML=GENRES[id].prompt;
+  buildLeds(GENRES[id]);
+  if(playing){step=0;startT=nextT;}
+}
+function buildLeds(g){
+  $('#leds').innerHTML='<i></i>'.repeat(g.steps);
+}
+function startMusic(){
+  ensureAudio();
+  if(playing)return;
+  playing=true;step=0;nextT=actx.currentTime+.06;startT=nextT;
+  $('#icPlay').style.display='none';$('#icStop').style.display='';
+  $('#syState').textContent='● playing';
+  const g=()=>GENRES[curG];
+  timer=setInterval(()=>{
+    const G=g(),sd=60/G.bpm/4;
+    while(nextT<actx.currentTime+.12){
+      scheduleStep(G,step,nextT);
+      nextT+=sd;step++;
+      if(step>=G.steps*G.bars)step=0;
+    }
+  },30);
+  vloop();
+}
+function stopMusic(){
+  playing=false;clearInterval(timer);
+  $('#icPlay').style.display='';$('#icStop').style.display='none';
+  $('#syState').textContent='idle';
+}
+function vloop(){
+  if(!playing)return;
+  requestAnimationFrame(vloop);
+  const cv=$('#viz'),cx=cv.getContext('2d');
+  cx.clearRect(0,0,cv.width,cv.height);
+  const data=new Uint8Array(analyser.frequencyBinCount);
+  analyser.getByteFrequencyData(data);
+  const n=42,bw=cv.width/n;
+  for(let i=0;i<n;i++){
+    const v=data[i]/255,h=Math.max(2,v*cv.height*.92);
+    cx.fillStyle='#a7c080';
+    cx.fillRect(i*bw+2,cv.height-h,bw-4,h);
+    cx.fillStyle='#dbbc7f';
+    cx.fillRect(i*bw+2,cv.height-h,bw-4,3);
+  }
+  const G=GENRES[curG],sd=60/G.bpm/4;
+  const cs=Math.max(0,Math.floor((actx.currentTime-startT)/sd))%(G.steps*G.bars);
+  const st=cs%G.steps;
+  $$('#leds i').forEach((l,i)=>l.classList.toggle('on',i===st));
+  $('#ledBar').textContent=`bar ${Math.floor(cs/G.steps)+1}/${G.bars}`;
+}
+ $('#playBtn').addEventListener('click',()=>playing?stopMusic():startMusic());
+ $$('.gchip').forEach(c=>c.addEventListener('click',()=>selectGenre(c.dataset.g)));
+selectGenre('waltz');
+
+/* ============ anubhuti: sparsh + gati ============ */
+(()=>{
+  const grid=$('#sparshGrid'),stage=$('#sparshStage'),dots=[];
+  for(let i=0;i<15*6;i++){const d=document.createElement('i');grid.appendChild(d);dots.push(d);}
+  let raf=null;
+  stage.addEventListener('pointermove',e=>{
+    const r=grid.getBoundingClientRect();
+    const mx=e.clientX-r.left,my=e.clientY-r.top;
+    cancelAnimationFrame(raf);
+    raf=requestAnimationFrame(()=>{
+      dots.forEach((d,i)=>{
+        const x=(i%15)*25+3,y=Math.floor(i/15)*25+3;
+        const dx=x-mx,dy=y-my,dist=Math.sqrt(dx*dx+dy*dy);
+        const s=1+1.9*Math.exp(-(dist*dist)/(2*55*55));
+        d.style.transform=`scale(${s.toFixed(2)})`;
+        d.style.background=s>1.45?'var(--amber)':'var(--faint)';
+      });
+    });
+  });
+  stage.addEventListener('pointerleave',()=>dots.forEach(d=>{d.style.transform='';d.style.background='';}));
+  let exT=null;
+  $('#gatiStage').addEventListener('click',()=>{
+    const p=$('#pendWrap');
+    p.classList.remove('excited');void p.offsetWidth;p.classList.add('excited');
+    clearTimeout(exT);exT=setTimeout(()=>p.classList.remove('excited'),2400);
+  });
+})();
+
+/* ============ chess board ============ */
+(()=>{
+  const FEN='1n1Rkb1r/p4ppp/4q3/4p1B1/4P3/8/PPP2PPP/2K5';
+  const GL={p:'♟',n:'♞',b:'♝',r:'♜',q:'♛',k:'♚'};
+  const AN={
+    d8:{t:'<b>Rd8#</b> — checkmate, delivered down the opened d-file. Protected from afar by the g5 bishop.',link:'g5'},
+    g5:{t:'<b>Bg5</b> — the long-diagonal guardian. Guards d8 through two empty squares; the invisible hand behind the mate.',link:'d8'},
+    b8:{t:'<b>Nb8</b> — forced to capture the sacrificed queen (16…Nxb8), leaving the d-file wide open like a trapdoor.',link:'d8'},
+    e6:{t:'<b>Qe6</b> — the black queen watches the mate arrive, blocked by her own pawns after being dragged out of position.',link:null},
+    c1:{t:'<b>Kc1</b> — castled early, untouched ever since. King safety is the quiet precondition for every attacking move.',link:null},
+    e5:{t:'<b>e5</b> — central pawn tension frozen in time: black holds e5, white holds e4, neither dares release the grip.',link:'e4'},
+    e4:{t:'<b>e4</b> — the anchor of white\'s central presence; it keeps the e5 pawn honest and the 5th rank contested.',link:'e5'},
+    f8:{t:'<b>Bf8</b> — undeveloped to the very last move. A whole game spent at home.',link:null},
+    h8:{t:'<b>Rh8</b> — trapped behind its own bishop. Development matters.',link:null}
+  };
+  const board=$('#board'),anno=$('#anno');
+  const rows=FEN.split('/');
+  for(let r=0;r<8;r++){
+    let c=0;
+    for(const ch of rows[r]){
+      if(/\d/.test(ch)){c+=+ch;continue;}
+      const sq=document.createElement('div');
+      const light=(r+c)%2===0;
+      sq.className=`sq ${light?'l':'d'} ${ch===ch.toUpperCase()?'wp':'bp'}`;
+      sq.dataset.sq='abcdefgh'[c]+(8-r);
+      sq.textContent=GL[ch.toLowerCase()];
+      sq.addEventListener('mouseenter',()=>{
+        $$('.sq').forEach(s=>s.classList.remove('sel','rel'));
+        sq.classList.add('sel');
+        const a=AN[sq.dataset.sq];
+        if(a){
+          anno.innerHTML=`<b>${sq.dataset.sq.toUpperCase()}</b> — ${a.t}`;
+          if(a.link){const rel=$$('.sq').find(s=>s.dataset.sq===a.link);if(rel)rel.classList.add('rel');}
+        }else{
+          anno.innerHTML=`<b>${sq.dataset.sq.toUpperCase()}</b> — quiet square. even here, every placement was a choice.`;
+        }
+      });
+      board.appendChild(sq);c++;
+    }
+  }
+  for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+    if(!board.children[r*8+c]){
+      const sq=document.createElement('div');
+      sq.className=`sq ${(r+c)%2===0?'l':'d'}`;
+      sq.dataset.sq='abcdefgh'[c]+(8-r);
+      sq.addEventListener('mouseenter',()=>{
+        $$('.sq').forEach(s=>s.classList.remove('sel','rel'));
+        anno.innerHTML=`<b>${sq.dataset.sq.toUpperCase()}</b> — empty. hover a piece for the positional note.`;
+      });
+      board.insertBefore(sq,board.children[r*8+c]||null);
+    }
+  }
+})();
+
+/* ============ interactive terminal ============ */
+(()=>{
+  const out=$('#tOut'),input=$('#tIn');
+  function print(html,cls=''){
+    const d=document.createElement('div');
+    d.className='t-line '+cls;d.innerHTML=html;
+    out.appendChild(d);out.scrollTop=out.scrollHeight;
+  }
+  const THEMES={green:'#a7c080',amber:'#dbbc7f',red:'#e67e80',aqua:'#83c092',blue:'#7fbbb3',purple:'#d699b6'};
+  const CMDS={
+    help:{d:'list commands',f(){
+      print(`<span class="t-ok">available commands</span>
+  help              this list
+  whoami            who is behind this
+  ls                list the project directory
+  cat &lt;file&gt;        manifesto.txt · stack.txt · archive.txt · site.txt …
+  projects          flagship builds
+  index             browse the full directory (interactive)
+  open &lt;section&gt;    sys · web · index · game · ai · toys · mind · term
+  archive           open ai-dhivyansh.edgeone.dev
+  fastfetch         system info
+  music &lt;genre&gt;     waltz · phonk · latin — live synthesis
+  theme &lt;color&gt;     green · amber · red · aqua · blue · purple
+  chess             jump to the analysis board
+  sudo hire-me      the important one
+  clear             wipe the screen`);
+    }},
+    whoami:{f(){
+      print(`mrcuriosity — <span class="t-ok">vibecoder &amp; systems enthusiast</span>.
+builds at the intersection of AI-assisted engineering and custom software:
+games, apps, OS concepts, local AI — all shipped from one 8 GB machine.
+education: still in progress. eta ~5 years of level-ups.
+status: currently curious.`);
+    }},
+    ls:{f(){
+      const names=INDEX.map(d=>d.n+(d.t==='dir'?'/':''));
+      const CW=27,rows=[];
+      for(let i=0;i<names.length;i+=3){
+        rows.push(names.slice(i,i+3).map(n=>{
+          const s=(n+' '.repeat(CW)).slice(0,CW);
+          return n.endsWith('/')?`<span class="t-ok">${s}</span>`:s;
+        }).join(''));
+      }
+      print(rows.join('\n')+`\n<span class="t-dim">${INDEX.length} objects — run 'index' to browse interactively.</span>`);
+    }},
+    cat:{f(args){
+      const f=(args[0]||'').replace(/^\.\//,'');
+      const FILES={
+        'manifesto.txt':`tools are a statement. a machine you've personally shaped is a machine you can push further.
+i bridge high-level ideas and production-ready software with AI as the power tool —
+and i document everything, from the bootloader to the deploy script.`,
+        'stack.txt':`os        windows 11 home · x64
+cpu       amd ryzen 3 5300u (4c/8t) @ 2.60 ghz · radeon graphics
+memory    8.00 gb (7.34 usable) — enough for pygame, luau and local llms
+disk      74 / 477 gb
+editor    antigravity ide (agentic workflows)
+ai        ollama · open webui · colab + pinggy · gemini api
+game      pygame · ursina · luau / roblox studio`,
+        'archive.txt':`the optiplex era (retired with honors):
+  zorin os core ⊕ windows 10 · grub 2.12 (tela × whitesur)
+  rclone → google drive · sigma fm · sober · fastfetch
+kept for the lessons. the stories stay in §1:sys.`,
+        'site.txt':`the full web-projects archive, live on edgeone:
+  https://ai-dhivyansh.edgeone.dev
+try 'archive' to open it in a new tab.`,
+        'ideas.txt':`infinite. check back never — check forward always.`,
+        'flag.txt':`<span class="t-am">flag{curiosity_is_the_root_shell}</span>`
+      };
+      if(FILES[f])print(FILES[f]);
+      else if(f==='projects'||f==='projects/')CMDS.projects.f();
+      else print(`cat: ${esc(f||'?')}: no such file — try 'ls'`,'t-err');
+    }},
+    projects:{f(){
+      print(`01  <span class="t-ok">samadhan digital</span> — cybercrime reporting portal (single-file, mobile-first)
+02  <span class="t-ok">messagen</span>          — encrypted messaging interface prototype
+03  <span class="t-ok">drizzle</span>           — minimal cloud storage dashboard
+04  <span class="t-ok">ganaga</span>            — full-screen ambient digital clock
+05  <span class="t-ok">punch monkey clicker</span> — shipped on Poki &amp; CrazyGames
+<span class="t-dim">…plus ${INDEX.length-5} more apps &amp; games on disk — run 'index' to browse.</span>`);
+    }},
+    index:{f(){
+      print('opening the full directory…','t-dim');go('index');
+    }},
+    open:{f(args){
+      const a=(args[0]||'').toLowerCase();
+      const map={main:'main',sys:'sys',web:'web',index:'index',game:'game',ai:'ai',toys:'toys',anubhuti:'toys',mind:'mind',term:'term','0':'main','1':'sys','2':'web','3':'index','4':'game','5':'ai','6':'toys','7':'mind','8':'term'};
+      if(map[a]){print(`opening §${map[a]}…`,'t-dim');go(map[a]);}
+      else print(`open: unknown section '${esc(a)}' — try: sys web index game ai toys mind term`,'t-err');
+    }},
+    archive:{f(){
+      window.open(SITE_URL,'_blank');
+      print('opening <span class="t-ok">ai-dhivyansh.edgeone.dev</span> in a new tab…');
+    }},
+    site:{f(){CMDS.archive.f();}},
+    fastfetch:{f(){
+      ffPairs.forEach(p=>{
+        if(p.raw)print(p.raw);
+        else print(`<span style="display:inline-block;width:66px" class="t-ok">${p.k}</span>${p.v}`);
+      });
+    }},
+    neofetch:{f(){CMDS.fastfetch.f();}},
+    music:{f(args){
+      const a=(args[0]||'').toLowerCase();
+      if(!a){print('usage: music &lt;waltz|phonk|latin&gt;','t-dim');return;}
+      if(!GENRES[a]){print(`music: unknown genre '${esc(a)}'`,'t-err');return;}
+      selectGenre(a);go('ai');
+      if(!playing)startMusic();
+      print(`▶ synthesizing <span class="t-ok">${GENRES[a].label}</span> live — see §5:ai`);
+    }},
+    theme:{f(args){
+      const a=(args[0]||'').toLowerCase();
+      if(!a){print('themes: '+Object.keys(THEMES).join(' · ')+'\nusage: theme &lt;color&gt;','t-dim');return;}
+      if(!THEMES[a]){print(`theme: '${esc(a)}' not installed`,'t-err');return;}
+      document.documentElement.style.setProperty('--accent',THEMES[a]);
+      print(`accent switched to <span style="color:${THEMES[a]}">■ ${a}</span> — easyfit: guaranteed.`);
+    }},
+    chess:{f(){print('moving to the board…','t-dim');go('mind');}},
+    sudo:{f(args){
+      const rest=args.join(' ');
+      if(rest.includes('hire-me')){
+        print(`[sudo] password for guest: ********
+access granted. querying availability…
+──────────────────────────────────────
+  status   : <span class="t-am">still in education — full-time student</span>
+  mode     : leveling up daily (code · systems · everything)
+  eta      : <span class="t-am">~5 years</span>, give or take a breakthrough
+──────────────────────────────────────
+verdict: check back around 2030 — by then the skill tree
+will be ridiculous. meanwhile, watch the archive grow:
+  → <span class="t-ok">ai-dhivyansh.edgeone.dev</span>   (run 'archive' to open)`);
+      }else{
+        print('guest is not in the sudoers file. this incident will be reported…\nto no one. curiosity is the root here.','t-err');
+      }
+    }},
+    clear:{f(){out.innerHTML='';}},
+    date:{f(){print(new Date().toString(),'t-dim');}},
+    uptime:{f(){print($('#tmxUp').textContent+' — load average: curious, curious, curious','t-dim');}},
+    echo:{f(args){print(esc(args.join(' '))||' ');}},
+    ping:{f(args){print(`PING ${esc(args[0]||'poki.com')}: 100% curiosity received. 0% packet loss. infinite enthusiasm.`,'t-dim');}},
+    'rm':{f(){print('rm: permission denied — curiosity protects the root.','t-err');}},
+    exit:{f(){print('there is no exit. only more windows in the session.','t-dim');}}
+  };
+  const hist=[];let hIdx=-1;
+  function run(raw){
+    print(`<span class="t-ps1">mrcuriosity@DESKTOP-OCTC3BM:~$</span> <span class="t-cmd">${esc(raw)}</span>`);
+    const parts=raw.trim().split(/\s+/).filter(Boolean);
+    if(!parts.length)return;
+    const c=parts[0].toLowerCase(),rest=parts.slice(1);
+    if(CMDS[c])CMDS[c].f(rest);
+    else print(`bash: ${esc(c)}: command not found — try 'help'`,'t-err');
+  }
+  print(`<span class="t-ok">MrCuriosity shell</span> — v3.0 (everforest on win11)
+type <span class="t-cmd">help</span> to list commands. try <span class="t-cmd">index</span> to browse every build on disk.`);
+  input.addEventListener('keydown',e=>{
+    if(e.key==='Enter'){
+      const v=input.value;input.value='';
+      if(v.trim()){hist.push(v);hIdx=hist.length;}
+      run(v);
+    }else if(e.key==='ArrowUp'){e.preventDefault();if(hIdx>0){hIdx--;input.value=hist[hIdx];}}
+    else if(e.key==='ArrowDown'){e.preventDefault();if(hIdx<hist.length-1){hIdx++;input.value=hist[hIdx];}else{hIdx=hist.length;input.value='';}}
+    else if(e.key==='Tab'){
+      e.preventDefault();
+      const v=input.value.trim();
+      const names=Object.keys(CMDS);
+      const m=names.find(n=>n.startsWith(v)&&v);
+      if(m)input.value=m+' ';
+    }
+  });
+  $('.term-big-body').addEventListener('click',()=>input.focus());
+})();
+
+/* ============ toast ============ */
+let toastT=null;
+function toast(msg){
+  const t=$('#toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2300);
+}
+</script>
+</body>
+</html>
